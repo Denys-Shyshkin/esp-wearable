@@ -30,6 +30,9 @@
 ## Timing
 *optional*
 
+## Battery consumption
+*table*
+
 ## Challenges
 *problem -> cause -> solution*
 
@@ -37,7 +40,7 @@
 *bullet list*
 
 ## Screenshots / Photos
-*logic analyzer and/or oscilloscope captures*
+*logic analyzer and/or oscilloscope captures*,
 *hardware photos*
 
 
