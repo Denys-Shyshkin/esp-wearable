@@ -96,6 +96,6 @@ void gfx_draw_text(int16_t x, int16_t y, const char *text, uint16_t color, uint8
         gfx_draw_char(cursor_x, y, *text, color, scale);
 
         text++;
-        cursor_x += FONT_8X8_COLS_QTY * scale;
+        cursor_x += (FONT_8X8_COLS_QTY + FONT_8X8_SPACING) * scale;
     }
 }

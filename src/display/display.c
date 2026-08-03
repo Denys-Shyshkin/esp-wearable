@@ -107,8 +107,7 @@ void display_init() {
     ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, true));
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
 
-    ESP_LOGI(TAG, "LCD test output");
-    display_fill_rect(0, 0, 240, 240, 0x0000);
+    display_clear();
 }
 
 // ========================== DRAW ==========================
@@ -138,4 +137,8 @@ void display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, 
     for (int row = y; row < (y + height); row++) {
         esp_lcd_panel_draw_bitmap(panel_handle, x, row, x + width, row + 1, buffer);
     }
+}
+
+void display_clear() {
+    display_fill_rect(0, 0, 240, 240, 0x0000);
 }
