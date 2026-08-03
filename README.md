@@ -9,7 +9,7 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 - Battery percentage
 - Steps count
 - Weather forecast
-- Ambient temperature, humidity and pressure
+- Heart rate sensor
 - Air raid alert map of Ukraine
 
 ## Software Stack
@@ -22,7 +22,7 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 
 | # | Image | Name / Model | Qty | Description |
 | --- | --- | --- | --- | --- |
-| 1 | <img src="https://images.prom.ua/7356627526_w640_h640_miniatyurnaya-plata-razrabotki.jpg" width="100" /> | ESP32-C3 PRO MINI | 1 | MCU based dev board |
+| 1 |  | ESP32-C3 PRO MINI | 1 | MCU based dev board |
 | 2 |  | ST7789 LCD TFT  | 1 | 240x240 display |
 | 3 |  | BME280 | 1 | environmental sensor |
 | 4 |  | QMI8658A | 1 | 6-axis inertial measurement unit  |
@@ -39,6 +39,14 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 *block diagram*
 
 ## Wiring
+
+*diagram*
+
+## Schematic
+
+*diagram*
+
+## PCB layout
 
 *diagram*
 
@@ -68,9 +76,29 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 
 ## Future Improvements
 
-*bullet list*
+- Settings screen (adjust brightness, etc.)
 
 ## Screenshots / Photos
 
 *logic analyzer and/or oscilloscope captures*,
 *hardware photos*
+
+## Project Progress
+
+- [x]  Display connection
+- [x]  Display setup
+- [x]  Basic graphic library creation
+- [x]  Adding basic font support
+- [ ]  Push buttons connection
+- [ ]  Introducing state machine
+- [ ]  Time screen layout setup
+- [ ]  Time update for secs, mins and hours
+- [ ]  Weather screen layout setup
+- [ ]  Adding special characters support
+- [ ]  Adding icons support
+- [ ]  Heart rate screen layout setup
+- [ ]  Adding animation support
+- [ ]  Air raid alerts screen layout setup
+- [ ]  Ukraine simplified bitmap output
+- [ ]  MUI sensor connection
+- [ ]  Wifi connection setup
