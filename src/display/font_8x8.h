@@ -10,3 +10,4 @@
 #define FONT_8X8_SPACING 0   // spacing between each char
 
 extern const uint8_t font_8x8[FONT_8X8_CHAR_QTY][FONT_8X8_ROWS_QTY];
+extern const uint8_t degree_char[FONT_8X8_ROWS_QTY];

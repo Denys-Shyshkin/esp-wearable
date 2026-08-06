@@ -4,16 +4,10 @@
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include "display/font_8x8.h"
 
 #define BUTTON_UP GPIO_NUM_7
 #define BUTTON_DOWN GPIO_NUM_8
-
-#define WHITE_COLOR 0xFFFF
-#define BLACK_COLOR 0x0000
-#define RED_COLOR 0xF800
-#define GREEN_COLOR 0x07E0
-#define BLUE_COLOR 0x001F
-#define YELLOW_COLOR 0xFFE0
 
 #define SUPERLOOP_DELAY 10
 
@@ -33,7 +27,7 @@ enum Screen {
     TOTAL_COUNT,
 };
 
-enum Screen screen_number = TIME;
+enum Screen screen_number = WEATHER;
 enum Screen last_screen_number = TOTAL_COUNT;
 
 const uint8_t MAX_SCREENS_QTY = TOTAL_COUNT - 1;
@@ -83,6 +77,8 @@ static void time_screen(enum Screen_Event event) {
     if (event == ENTER) {
         display_clear();
 
+        // gfx_draw_alignment_lines();
+
         const char *bat_percentage = "78%";
         gfx_draw_text(98, 0, bat_percentage, WHITE_COLOR, 2);
 
@@ -90,31 +86,50 @@ static void time_screen(enum Screen_Event event) {
         gfx_draw_text(0, 70, date, WHITE_COLOR, 2);
 
         const char *seconds = "43";
-        gfx_draw_text(200, 70, seconds, WHITE_COLOR, 2);
+        gfx_draw_text(210, 70, seconds, WHITE_COLOR, 2);
 
         const char *hours = "20";
         const char *separator = ":";
         const char *mins = "56";
         gfx_draw_text(0, 90, hours, WHITE_COLOR, 7);
         gfx_draw_text(105, 95, separator, WHITE_COLOR, 5);
-        gfx_draw_text(135, 90, mins, WHITE_COLOR, 7);
+        gfx_draw_text(142, 90, mins, WHITE_COLOR, 7);
 
         const char *steps_count = "1234";
         gfx_draw_text(90, 225, steps_count, WHITE_COLOR, 2);
-
-        // Screen center lines
-        gfx_draw_line(120, 0, 120, 240, YELLOW_COLOR);
-        gfx_draw_line(0, 120, 240, 120, YELLOW_COLOR);
     }
 }
 
 static void weather_screen(enum Screen_Event event) {
     if (event == ENTER) {
         display_clear();
-    }
 
-    const char *text = "Weather";
-    gfx_draw_text(0, 20, text, WHITE_COLOR, 2);
+        // gfx_draw_alignment_lines();
+
+        const char *location_name = "Kyiv";
+        gfx_draw_text(90, 0, location_name, WHITE_COLOR, 2);
+
+        gfx_draw_line(60, 30, 180, 30, WHITE_COLOR);
+
+        const char *temp_value = "24";
+        gfx_draw_text(100, 60, temp_value, WHITE_COLOR, 5);
+
+        gfx_draw_spec_char(170, 60, degree_char, WHITE_COLOR, 4);
+
+        const char *temp_unit = "C";
+        gfx_draw_text(200, 60, temp_unit, WHITE_COLOR, 5);
+
+        gfx_draw_line(20, 120, 220, 120, WHITE_COLOR);
+
+        const char *wind_value = "2.1 km/h";
+        gfx_draw_text(100, 140, wind_value, WHITE_COLOR, 2);
+
+        const char *pressure_value = "1015";
+        gfx_draw_text(100, 170, pressure_value, WHITE_COLOR, 2);
+
+        const char *humidity_value = "27%";
+        gfx_draw_text(100, 200, humidity_value, WHITE_COLOR, 2);
+    }
 }
 
 static void alerts_screen(enum Screen_Event event) {

@@ -62,17 +62,7 @@ void gfx_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint
     gfx_draw_line(x, y1, x, y, color);
 }
 
-void gfx_draw_char(int16_t x, int16_t y, char c, uint16_t color, uint8_t scale) {
-    if (scale == 0) {
-        return;
-    }
-    if (c < FONT_8X8_FIRST_CHAR || c > FONT_8X8_LAST_CHAR) {
-        return;
-    }
-
-    uint8_t index = c - FONT_8X8_FIRST_CHAR;
-    const uint8_t *glyph = font_8x8[index];
-
+static void gfx_draw_char(int16_t x, int16_t y, const uint8_t *glyph, uint16_t color, uint8_t scale) {
     for (int row = 0; row < FONT_8X8_ROWS_QTY; row++) {
         uint8_t row_data = glyph[row];
 
@@ -86,6 +76,19 @@ void gfx_draw_char(int16_t x, int16_t y, char c, uint16_t color, uint8_t scale) 
     }
 }
 
+void gfx_draw_base_char(int16_t x, int16_t y, char c, uint16_t color, uint8_t scale) {
+    if (scale == 0) {
+        return;
+    }
+    if (c < FONT_8X8_FIRST_CHAR || c > FONT_8X8_LAST_CHAR) {
+        return;
+    }
+
+    uint8_t index = c - FONT_8X8_FIRST_CHAR;
+
+    gfx_draw_char(x, y, font_8x8[index], color, scale);
+}
+
 void gfx_draw_text(int16_t x, int16_t y, const char *text, uint16_t color, uint8_t scale) {
     if (scale == 0) {
         return;
@@ -93,9 +96,29 @@ void gfx_draw_text(int16_t x, int16_t y, const char *text, uint16_t color, uint8
     int16_t cursor_x = x;
 
     while (*text != '\0') {
-        gfx_draw_char(cursor_x, y, *text, color, scale);
+        gfx_draw_base_char(cursor_x, y, *text, color, scale);
 
         text++;
         cursor_x += (FONT_8X8_COLS_QTY + FONT_8X8_SPACING) * scale;
     }
+}
+
+void gfx_draw_spec_char(int16_t x, int16_t y, const uint8_t special_char[], uint16_t color, uint8_t scale) {
+    if (scale == 0) {
+        return;
+    }
+
+    gfx_draw_char(x, y, special_char, color, scale);
+}
+
+void gfx_draw_alignment_lines() {
+    // Screen center lines
+    gfx_draw_line(120, 0, 120, 240, RED_COLOR);
+    gfx_draw_line(0, 120, 240, 120, RED_COLOR);
+
+    // Screen 1/3 grid
+    gfx_draw_line(0, 80, 240, 80, YELLOW_COLOR);
+    gfx_draw_line(0, 160, 240, 160, YELLOW_COLOR);
+    gfx_draw_line(80, 0, 80, 240, YELLOW_COLOR);
+    gfx_draw_line(160, 0, 160, 240, YELLOW_COLOR);
 }
