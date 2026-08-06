@@ -1,14 +1,17 @@
 #include "button/button.h"
 #include "display/display.h"
+#include "display/font_8x8.h"
 #include "display/graphics.h"
+#include "display/icons.h"
+#include "esp_timer.h"
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include "display/font_8x8.h"
-#include "display/icons.h"
 
 #define BUTTON_UP GPIO_NUM_7
 #define BUTTON_DOWN GPIO_NUM_8
+
+#define HEART_DRAW_DELAY_US 400 * 1000
 
 #define SUPERLOOP_DELAY 10
 
@@ -23,12 +26,11 @@ enum Screen {
     STARTUP,
     TIME,
     WEATHER,
-    ALERTS,
     HEART,
     TOTAL_COUNT,
 };
 
-enum Screen screen_number = WEATHER;
+enum Screen screen_number = HEART;
 enum Screen last_screen_number = TOTAL_COUNT;
 
 const uint8_t MAX_SCREENS_QTY = TOTAL_COUNT - 1;
@@ -78,8 +80,6 @@ static void time_screen(enum Screen_Event event) {
     if (event == ENTER) {
         display_clear();
 
-        // gfx_draw_alignment_lines();
-
         const char *bat_percentage = "78%";
         gfx_draw_text(98, 0, bat_percentage, WHITE_COLOR, 2);
 
@@ -104,8 +104,6 @@ static void time_screen(enum Screen_Event event) {
 static void weather_screen(enum Screen_Event event) {
     if (event == ENTER) {
         display_clear();
-
-        // gfx_draw_alignment_lines();
 
         const char *location_name = "Kyiv";
         gfx_draw_text(90, 0, location_name, WHITE_COLOR, 2);
@@ -139,22 +137,39 @@ static void weather_screen(enum Screen_Event event) {
     }
 }
 
-static void alerts_screen(enum Screen_Event event) {
-    if (event == ENTER) {
-        display_clear();
-    }
+static void heart_beat_animation() {
+    uint32_t now = esp_timer_get_time();
 
-    const char *text = "Alerts";
-    gfx_draw_text(0, 20, text, WHITE_COLOR, 2);
+    static uint32_t last_heart_draw = 0;
+    static bool is_big_heart_draw = 0;
+
+    if (now - last_heart_draw >= HEART_DRAW_DELAY_US) {
+        last_heart_draw = now;
+
+        gfx_fill_rect(90, 50, 65, 60, BLACK_COLOR);
+
+        if (is_big_heart_draw) {
+            gfx_draw_icon(105, 65, heart_icon, RED_COLOR, 1);
+        } else {
+            gfx_draw_icon(90, 50, heart_icon, RED_COLOR, 2);
+        }
+
+        is_big_heart_draw = !is_big_heart_draw;
+    }
 }
 
 static void heart_screen(enum Screen_Event event) {
     if (event == ENTER) {
         display_clear();
+
+        const char *screen_name = "Heart rate";
+        gfx_draw_text(35, 0, screen_name, WHITE_COLOR, 2);
+
+        const char *heart_rate = "62";
+        gfx_draw_text(85, 140, heart_rate, WHITE_COLOR, 5);
     }
 
-    const char *text = "Heart";
-    gfx_draw_text(0, 20, text, WHITE_COLOR, 2);
+    heart_beat_animation();
 }
 
 static void screen_manager() {
@@ -176,10 +191,6 @@ static void screen_manager() {
 
     case WEATHER:
         weather_screen(event);
-        break;
-
-    case ALERTS:
-        alerts_screen(event);
         break;
 
     case HEART:
