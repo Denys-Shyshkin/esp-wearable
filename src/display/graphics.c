@@ -1,6 +1,7 @@
 #include "graphics.h"
 #include "display.h"
 #include "font_8x8.h"
+#include "icons.h"
 #include <esp_log.h>
 #include <math.h>
 #include <stdint.h>
@@ -67,6 +68,20 @@ static void gfx_draw_char(int16_t x, int16_t y, const uint8_t *glyph, uint16_t c
         uint8_t row_data = glyph[row];
 
         for (int col = 0; col < FONT_8X8_COLS_QTY; col++) {
+            bool pixel_on = (row_data >> col) & 1;
+
+            if (pixel_on) {
+                gfx_fill_rect(x + col * scale, y + row * scale, scale, scale, color);
+            }
+        }
+    }
+}
+
+void gfx_draw_icon(int16_t x, int16_t y, const uint32_t *icon, uint16_t color, uint8_t scale) {
+    for (int row = 0; row < ICON_ROWS_QTY; row++) {
+        uint32_t row_data = icon[row];
+
+        for (int col = 0; col < ICON_COLS_QTY; col++) {
             bool pixel_on = (row_data >> col) & 1;
 
             if (pixel_on) {

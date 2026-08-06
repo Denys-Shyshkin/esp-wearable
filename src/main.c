@@ -5,6 +5,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include "display/font_8x8.h"
+#include "display/icons.h"
 
 #define BUTTON_UP GPIO_NUM_7
 #define BUTTON_DOWN GPIO_NUM_8
@@ -111,24 +112,30 @@ static void weather_screen(enum Screen_Event event) {
 
         gfx_draw_line(60, 30, 180, 30, WHITE_COLOR);
 
-        const char *temp_value = "24";
-        gfx_draw_text(100, 60, temp_value, WHITE_COLOR, 5);
+        gfx_draw_icon(10, 45, weather_01d, WHITE_COLOR, 2);
 
-        gfx_draw_spec_char(170, 60, degree_char, WHITE_COLOR, 4);
+        const char *temp_value = "24";
+        gfx_draw_text(80, 60, temp_value, WHITE_COLOR, 5);
+
+        gfx_draw_spec_char(160, 60, degree_char, WHITE_COLOR, 4);
 
         const char *temp_unit = "C";
-        gfx_draw_text(200, 60, temp_unit, WHITE_COLOR, 5);
+        gfx_draw_text(190, 60, temp_unit, WHITE_COLOR, 5);
 
         gfx_draw_line(20, 120, 220, 120, WHITE_COLOR);
 
+        gfx_draw_icon(30, 130, wind_icon, LIGHT_BLUE_COLOR, 1);
+        gfx_draw_icon(30, 170, pressure_icon, LIGHT_BLUE_COLOR, 1);
+        gfx_draw_icon(30, 210, humidity_icon, LIGHT_BLUE_COLOR, 1);
+
         const char *wind_value = "2.1 km/h";
-        gfx_draw_text(100, 140, wind_value, WHITE_COLOR, 2);
+        gfx_draw_text(80, 140, wind_value, LIGHT_GREY_COLOR, 2);
 
-        const char *pressure_value = "1015";
-        gfx_draw_text(100, 170, pressure_value, WHITE_COLOR, 2);
+        const char *pressure_value = "1015 mbar";
+        gfx_draw_text(80, 180, pressure_value, LIGHT_GREY_COLOR, 2);
 
-        const char *humidity_value = "27%";
-        gfx_draw_text(100, 200, humidity_value, WHITE_COLOR, 2);
+        const char *humidity_value = "27 %";
+        gfx_draw_text(80, 220, humidity_value, LIGHT_GREY_COLOR, 2);
     }
 }
 

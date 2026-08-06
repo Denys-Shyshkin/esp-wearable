@@ -8,11 +8,10 @@
 
 #define PIN_NUM_SCLK 4
 #define PIN_NUM_MOSI 6
-#define PIN_NUM_MISO 3
 #define PIN_NUM_DC 10
 #define PIN_NUM_CS 20
-#define PIN_NUM_BK_LIGHT 21
-#define PIN_NUM_LCD_RST 9
+#define PIN_NUM_BKL 21
+#define PIN_NUM_RST 9
 
 #define LCD_H_RES 240
 #define LCD_V_RES 240
@@ -64,16 +63,16 @@ void display_init() {
     ESP_LOGI(TAG, "Turn on LCD backlight");
     gpio_config_t bk_gpio_config = {
         .mode = GPIO_MODE_OUTPUT,
-        .pin_bit_mask = 1ULL << PIN_NUM_BK_LIGHT,
+        .pin_bit_mask = 1ULL << PIN_NUM_BKL,
     };
     ESP_ERROR_CHECK(gpio_config(&bk_gpio_config));
-    ESP_ERROR_CHECK(gpio_set_level(PIN_NUM_BK_LIGHT, 1));
+    ESP_ERROR_CHECK(gpio_set_level(PIN_NUM_BKL, 1));
 
     ESP_LOGI(TAG, "Initialize SPI bus");
     spi_bus_config_t buscfg = {
         .sclk_io_num = PIN_NUM_SCLK,
         .mosi_io_num = PIN_NUM_MOSI,
-        .miso_io_num = PIN_NUM_MISO,
+        .miso_io_num = -1,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .max_transfer_sz = LCD_H_RES * 80 * sizeof(uint16_t), // transfer 80 lines of pixels (assume pixel is RGB565) at most in one SPI transaction
@@ -95,7 +94,7 @@ void display_init() {
 
     ESP_LOGI(TAG, "Install the LCD controller driver");
     esp_lcd_panel_dev_config_t panel_config = {
-        .reset_gpio_num = PIN_NUM_LCD_RST,
+        .reset_gpio_num = PIN_NUM_RST,
         .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB,
         .data_endian = LCD_RGB_DATA_ENDIAN_LITTLE,
         .bits_per_pixel = 16,
