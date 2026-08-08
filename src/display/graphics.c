@@ -1,5 +1,6 @@
 #include "graphics.h"
 #include "display.h"
+#include "esp_timer.h"
 #include "font_8x8.h"
 #include "icons.h"
 #include <esp_log.h>
@@ -136,4 +137,23 @@ void gfx_draw_alignment_lines() {
     gfx_draw_line(0, 160, 240, 160, YELLOW_COLOR);
     gfx_draw_line(80, 0, 80, 240, YELLOW_COLOR);
     gfx_draw_line(160, 0, 160, 240, YELLOW_COLOR);
+}
+
+void gfx_animation(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const Animation_Frame frames[], uint8_t frames_qty, uint32_t frames_delay) {
+    uint32_t now = esp_timer_get_time();
+
+    static uint8_t current_frame = 0;
+    static uint32_t last_frame_draw = 0;
+
+    if (now - last_frame_draw >= frames_delay) {
+        last_frame_draw = now;
+
+        gfx_fill_rect(x, y, width, height, BLACK_COLOR);
+        gfx_draw_icon(frames[current_frame].x, frames[current_frame].y, frames[current_frame].icon, frames[current_frame].color, frames[current_frame].scale);
+
+        current_frame++;
+        if (current_frame >= frames_qty) {
+            current_frame = 0;
+        }
+    }
 }

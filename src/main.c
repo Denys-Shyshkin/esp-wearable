@@ -3,7 +3,6 @@
 #include "display/font_8x8.h"
 #include "display/graphics.h"
 #include "display/icons.h"
-#include "esp_timer.h"
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -12,6 +11,7 @@
 #define BUTTON_DOWN GPIO_NUM_8
 
 #define HEART_DRAW_DELAY_US 400 * 1000
+#define HEART_ANIM_FRAMES_QTY 2
 
 #define SUPERLOOP_DELAY 10
 
@@ -38,6 +38,11 @@ const uint8_t MAX_SCREENS_QTY = TOTAL_COUNT - 1;
 enum Screen_Event {
     ENTER,
     UPDATE,
+};
+
+Animation_Frame beating_heart[HEART_ANIM_FRAMES_QTY] = {
+    {.x = 105, .y = 65, .icon = heart_icon, .color = RED_COLOR, .scale = 1},
+    {.x = 90, .y = 50, .icon = heart_icon, .color = RED_COLOR, .scale = 2},
 };
 
 static void buttons_reading() {
@@ -137,27 +142,6 @@ static void weather_screen(enum Screen_Event event) {
     }
 }
 
-static void heart_beat_animation() {
-    uint32_t now = esp_timer_get_time();
-
-    static uint32_t last_heart_draw = 0;
-    static bool is_big_heart_draw = 0;
-
-    if (now - last_heart_draw >= HEART_DRAW_DELAY_US) {
-        last_heart_draw = now;
-
-        gfx_fill_rect(90, 50, 65, 60, BLACK_COLOR);
-
-        if (is_big_heart_draw) {
-            gfx_draw_icon(105, 65, heart_icon, RED_COLOR, 1);
-        } else {
-            gfx_draw_icon(90, 50, heart_icon, RED_COLOR, 2);
-        }
-
-        is_big_heart_draw = !is_big_heart_draw;
-    }
-}
-
 static void heart_screen(enum Screen_Event event) {
     if (event == ENTER) {
         display_clear();
@@ -169,7 +153,7 @@ static void heart_screen(enum Screen_Event event) {
         gfx_draw_text(85, 140, heart_rate, WHITE_COLOR, 5);
     }
 
-    heart_beat_animation();
+    gfx_animation(90, 50, 65, 60, beating_heart, HEART_ANIM_FRAMES_QTY, HEART_DRAW_DELAY_US);
 }
 
 static void screen_manager() {
