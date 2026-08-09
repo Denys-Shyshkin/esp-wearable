@@ -1,19 +1,13 @@
 #include "screens.h"
+#include "display/display.h"
 #include "display/font_8x8.h"
 #include "display/graphics.h"
 #include "display/icons.h"
-#include "display/display.h"
-
-#define SPINNER_DRAW_DELAY_US 400 * 1000
-#define SPINNER_ANIM_FRAMES_QTY 5
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 #define HEART_DRAW_DELAY_US 400 * 1000
 #define HEART_ANIM_FRAMES_QTY 2
-
-#define DEFAULT_LOADING (Animation_Frame){.x = 90, .y = 50, .icon = loading, .color = SEA_GREEN_COLOR, .scale = 2}
-
-Animation_Frame loading_spinner[SPINNER_ANIM_FRAMES_QTY];
-const uint32_t *spinner_icons[SPINNER_ANIM_FRAMES_QTY] = {loading_1, loading_2, loading_3, loading_4, loading_5};
 
 Animation_Frame beating_heart[HEART_ANIM_FRAMES_QTY] = {
     {.x = 105, .y = 65, .icon = heart_icon, .color = RED_COLOR, .scale = 1},
@@ -21,44 +15,29 @@ Animation_Frame beating_heart[HEART_ANIM_FRAMES_QTY] = {
 };
 
 enum Screen screen_number = STARTUP;
-enum Screen last_screen_number = TOTAL_COUNT;
+enum Screen last_screen_number = STARTUP;
 
 const uint8_t MAX_SCREENS_QTY = TOTAL_COUNT - 1;
-
-void loading_spinner_frames_init() {
-    for (int i = 0; i < SPINNER_ANIM_FRAMES_QTY; i++) {
-        loading_spinner[i] = DEFAULT_LOADING;
-        loading_spinner[i].icon = spinner_icons[i];
-    }
-}
 
 void startup_screen(enum Screen_Event event) {
     if (event == ENTER) {
         display_clear();
 
         const char *startup = "STARTING";
-        gfx_draw_text(60, 0, startup, WHITE_COLOR, 2);
+        gfx_draw_text(60, 20, startup, SEA_GREEN_COLOR, 2);
 
-        const char *wifi_connection = "Wi-Fi...........";
-        gfx_draw_text(40, 160, wifi_connection, WHITE_COLOR, 1);
+        // const char *time_synced = "Time synced.....";
+        // gfx_draw_text(40, 100, time_synced, LIGHT_GREY_COLOR, 1);
 
-        const char *time_synced = "Time synced.....";
-        gfx_draw_text(40, 180, time_synced, WHITE_COLOR, 1);
+        // const char *weather_update = "Weather update..";
+        // gfx_draw_text(40, 120, weather_update, LIGHT_GREY_COLOR, 1);
 
-        const char *mui_init = "IMU init........";
-        gfx_draw_text(40, 200, mui_init, WHITE_COLOR, 1);
+        // const char *mui_init = "IMU init........";
+        // gfx_draw_text(40, 140, mui_init, LIGHT_GREY_COLOR, 1);
 
-        const char *hr_sensor = "HR sensor.......";
-        gfx_draw_text(40, 220, hr_sensor, WHITE_COLOR, 1);
-
-        const char *ok_status = "OK";
-        const char *fail_status = "FAIL";
-        gfx_draw_text(170, 160, ok_status, GREEN_COLOR, 1);
-        gfx_draw_text(170, 180, ok_status, GREEN_COLOR, 1);
-        gfx_draw_text(170, 200, fail_status, RED_COLOR, 1);
+        // const char *hr_sensor = "HR sensor.......";
+        // gfx_draw_text(40, 160, hr_sensor, LIGHT_GREY_COLOR, 1);
     }
-
-    gfx_animation(90, 50, 65, 65, loading_spinner, SPINNER_ANIM_FRAMES_QTY, SPINNER_DRAW_DELAY_US);
 }
 
 void time_screen(enum Screen_Event event) {

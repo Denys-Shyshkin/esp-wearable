@@ -4,6 +4,7 @@
 #include "display/graphics.h"
 #include "display/icons.h"
 #include "screens/screens.h"
+#include "wifi/wifi.h"
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -19,6 +20,9 @@ static const char *TAG = "MAIN";
 
 Button btn_up = DEFAULT_BUTTON;
 Button btn_down = DEFAULT_BUTTON;
+
+const char *ok_status = "OK";
+const char *fail_status = "FAIL";
 
 static void buttons_reading() {
     button_is_pressed(&btn_up);
@@ -49,7 +53,15 @@ static void screen_change() {
 
 void app_main() {
     display_init();
-    loading_spinner_frames_init();
+    startup_screen(ENTER);
+
+    const char *wifi_connection = "Wi-Fi...........";
+    gfx_draw_text(40, 80, wifi_connection, LIGHT_GREY_COLOR, 1);
+    if (wifi_init_sta()) {
+        gfx_draw_text(170, 80, ok_status, GREEN_COLOR, 1);
+    } else {
+        gfx_draw_text(170, 80, fail_status, RED_COLOR, 1);
+    }
 
     button_init(&btn_up, BUTTON_UP);
     button_init(&btn_down, BUTTON_DOWN);
@@ -59,7 +71,7 @@ void app_main() {
         screen_change();
         screen_manager();
 
-        ESP_LOGI(TAG, "Current screen number: %d \n", screen_number);
+        // ESP_LOGI(TAG, "Current screen number: %d \n", screen_number);
 
         vTaskDelay(pdMS_TO_TICKS(SUPERLOOP_DELAY));
     }
