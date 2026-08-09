@@ -26,9 +26,6 @@ void startup_screen(enum Screen_Event event) {
         const char *startup = "STARTING";
         gfx_draw_text(60, 20, startup, SEA_GREEN_COLOR, 2);
 
-        // const char *time_synced = "Time synced.....";
-        // gfx_draw_text(40, 100, time_synced, LIGHT_GREY_COLOR, 1);
-
         // const char *weather_update = "Weather update..";
         // gfx_draw_text(40, 120, weather_update, LIGHT_GREY_COLOR, 1);
 

@@ -4,6 +4,7 @@
 #include "display/graphics.h"
 #include "display/icons.h"
 #include "screens/screens.h"
+#include "time/time.h"
 #include "wifi/wifi.h"
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
@@ -51,8 +52,7 @@ static void screen_change() {
     }
 }
 
-void app_main() {
-    display_init();
+static void functionality_setup() {
     startup_screen(ENTER);
 
     const char *wifi_connection = "Wi-Fi...........";
@@ -62,6 +62,19 @@ void app_main() {
     } else {
         gfx_draw_text(170, 80, fail_status, RED_COLOR, 1);
     }
+
+    const char *time_synced = "Time synced.....";
+    gfx_draw_text(40, 100, time_synced, LIGHT_GREY_COLOR, 1);
+    if (sync_time()) {
+        gfx_draw_text(170, 100, ok_status, GREEN_COLOR, 1);
+    } else {
+        gfx_draw_text(170, 100, fail_status, RED_COLOR, 1);
+    }
+}
+
+void app_main() {
+    display_init();
+    functionality_setup();
 
     button_init(&btn_up, BUTTON_UP);
     button_init(&btn_down, BUTTON_DOWN);

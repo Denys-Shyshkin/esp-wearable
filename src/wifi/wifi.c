@@ -8,16 +8,15 @@
 #include "secrets.h"
 #include <esp_log.h>
 
-#define MAX_RETRY 10
-
-static EventGroupHandle_t s_wifi_event_group;
-
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 
+#define MAX_RETRY 10
+
 static const char *TAG = "WIFI";
 
-static int s_retry_num = 0;
+static uint8_t s_retry_num = 0;
+static EventGroupHandle_t s_wifi_event_group;
 
 static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
