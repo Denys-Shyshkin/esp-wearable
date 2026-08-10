@@ -33,8 +33,7 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 |  |  | resistor | 1 | to create voltage divider |
 
 ## System Architecture
-
-*block diagram*
+<img src="./img/diagrams/software_architecture.png" alt="System Architecture" width="800">
 
 ## Wiring
 
