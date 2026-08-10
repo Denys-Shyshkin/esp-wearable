@@ -128,12 +128,12 @@ void display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, 
 
     // Filling buffer for one row
     static uint16_t buffer[LCD_H_RES];
-    for (int i = 0; i < width; i++) {
+    for (uint16_t i = 0; i < width; i++) {
         buffer[i] = color;
     }
 
     // Iteration thru all rows
-    for (int row = y; row < (y + height); row++) {
+    for (uint16_t row = y; row < (y + height); row++) {
         esp_lcd_panel_draw_bitmap(panel_handle, x, row, x + width, row + 1, buffer);
     }
 }

@@ -13,6 +13,8 @@
 #define BUTTON_UP GPIO_NUM_7
 #define BUTTON_DOWN GPIO_NUM_8
 
+#define INIT_STATUSES_QTY 2
+
 #define SUPERLOOP_DELAY 10
 
 static const char *TAG = "MAIN";
@@ -22,8 +24,15 @@ static const char *TAG = "MAIN";
 Button btn_up = DEFAULT_BUTTON;
 Button btn_down = DEFAULT_BUTTON;
 
-const char *ok_status = "OK";
-const char *fail_status = "FAIL";
+typedef struct {
+    const char *text;
+    uint16_t color;
+} Init_Status;
+
+Init_Status const fail_status = {.text = "FAIL", .color = RED_COLOR};
+Init_Status const ok_status = {.text = "OK", .color = GREEN_COLOR};
+
+Init_Status init_statuses[INIT_STATUSES_QTY] = {fail_status, ok_status};
 
 static void buttons_reading() {
     button_is_pressed(&btn_up);
@@ -57,19 +66,13 @@ static void functionality_setup() {
 
     const char *wifi_connection = "Wi-Fi...........";
     gfx_draw_text(40, 80, wifi_connection, LIGHT_GREY_COLOR, 1);
-    if (wifi_init_sta()) {
-        gfx_draw_text(170, 80, ok_status, GREEN_COLOR, 1);
-    } else {
-        gfx_draw_text(170, 80, fail_status, RED_COLOR, 1);
-    }
+    uint8_t is_wifi_init = wifi_init_sta();
+    gfx_draw_text(170, 80, init_statuses[is_wifi_init].text, init_statuses[is_wifi_init].color, 1);
 
     const char *time_synced = "Time synced.....";
     gfx_draw_text(40, 100, time_synced, LIGHT_GREY_COLOR, 1);
-    if (sync_time()) {
-        gfx_draw_text(170, 100, ok_status, GREEN_COLOR, 1);
-    } else {
-        gfx_draw_text(170, 100, fail_status, RED_COLOR, 1);
-    }
+    uint8_t is_sync_time = sync_time();
+    gfx_draw_text(170, 100, init_statuses[is_sync_time].text, init_statuses[is_sync_time].color, 1);
 }
 
 void app_main() {

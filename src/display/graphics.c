@@ -65,10 +65,10 @@ void gfx_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint
 }
 
 static void gfx_draw_char(int16_t x, int16_t y, const uint8_t *glyph, uint16_t color, uint8_t scale) {
-    for (int row = 0; row < FONT_8X8_ROWS_QTY; row++) {
+    for (uint8_t row = 0; row < FONT_8X8_ROWS_QTY; row++) {
         uint8_t row_data = glyph[row];
 
-        for (int col = 0; col < FONT_8X8_COLS_QTY; col++) {
+        for (uint8_t col = 0; col < FONT_8X8_COLS_QTY; col++) {
             bool pixel_on = (row_data >> col) & 1;
 
             if (pixel_on) {
@@ -79,10 +79,10 @@ static void gfx_draw_char(int16_t x, int16_t y, const uint8_t *glyph, uint16_t c
 }
 
 void gfx_draw_icon(int16_t x, int16_t y, const uint32_t *icon, uint16_t color, uint8_t scale) {
-    for (int row = 0; row < ICON_ROWS_QTY; row++) {
+    for (uint8_t row = 0; row < ICON_ROWS_QTY; row++) {
         uint32_t row_data = icon[row];
 
-        for (int col = 0; col < ICON_COLS_QTY; col++) {
+        for (uint8_t col = 0; col < ICON_COLS_QTY; col++) {
             bool pixel_on = (row_data >> col) & 1;
 
             if (pixel_on) {
