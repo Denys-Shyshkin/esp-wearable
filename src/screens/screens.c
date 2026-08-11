@@ -3,11 +3,16 @@
 #include "display/font_8x8.h"
 #include "display/graphics.h"
 #include "display/icons.h"
+#include "time/time.h"
+#include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <time.h>
 
 #define HEART_DRAW_DELAY_US 400 * 1000
 #define HEART_ANIM_FRAMES_QTY 2
+
+static const char *TAG = "SCREENS";
 
 Animation_Frame beating_heart[HEART_ANIM_FRAMES_QTY] = {
     {.x = 105, .y = 65, .icon = heart_icon, .color = RED_COLOR, .scale = 1},
@@ -37,29 +42,75 @@ void startup_screen(enum Screen_Event event) {
     }
 }
 
+static void draw_seconds(enum Screen_Event event, struct tm *timeinfo) {
+    static uint8_t displayed_seconds;
+
+    if (displayed_seconds != timeinfo->tm_sec || event == ENTER) {
+        gfx_fill_rect(210, 70, 30, 15, BLACK_COLOR); // clear seconds
+        char sec_buff[3];
+        strftime(sec_buff, sizeof(sec_buff), "%S", timeinfo);
+        gfx_draw_text(210, 70, sec_buff, WHITE_COLOR, 2);
+
+        displayed_seconds = timeinfo->tm_sec;
+    }
+}
+
+static void draw_hours_minutes(enum Screen_Event event, struct tm *timeinfo) {
+    static uint8_t displayed_minutes;
+    static uint8_t displayed_hours;
+
+    if (displayed_minutes != timeinfo->tm_min || event == ENTER) {
+        gfx_fill_rect(142, 90, 100, 50, YELLOW_COLOR); // clear mins
+        char mins_buff[6];
+        strftime(mins_buff, sizeof(mins_buff), "%M", timeinfo);
+        gfx_draw_text(142, 90, mins_buff, WHITE_COLOR, 7);
+
+        displayed_minutes = timeinfo->tm_min;
+    }
+
+    if (displayed_hours != timeinfo->tm_hour || event == ENTER) {
+        gfx_fill_rect(0, 90, 105, 50, GREEN_COLOR); // clear hours
+        char hour_buff[6];
+        strftime(hour_buff, sizeof(hour_buff), "%H", timeinfo);
+        gfx_draw_text(0, 90, hour_buff, WHITE_COLOR, 7);
+
+        displayed_hours = timeinfo->tm_hour;
+    }
+}
+
+static void draw_date(enum Screen_Event event, struct tm *timeinfo) {
+    static uint8_t displayed_date;
+
+    if (displayed_date != timeinfo->tm_mday || event == ENTER) {
+        gfx_fill_rect(0, 60, 200, 30, SEA_GREEN_COLOR); // clear date
+        char date_buff[20];
+        strftime(date_buff, sizeof(date_buff), "%a, %b %d", timeinfo);
+        gfx_draw_text(0, 70, date_buff, WHITE_COLOR, 2);
+
+        displayed_date = timeinfo->tm_mday;
+    }
+}
+
 void time_screen(enum Screen_Event event) {
+    struct tm timeinfo;
+    get_time(&timeinfo);
+
     if (event == ENTER) {
         display_clear();
 
         const char *bat_percentage = "78%";
         gfx_draw_text(98, 0, bat_percentage, WHITE_COLOR, 2);
 
-        const char *date = "July 27";
-        gfx_draw_text(0, 70, date, WHITE_COLOR, 2);
-
-        const char *seconds = "43";
-        gfx_draw_text(210, 70, seconds, WHITE_COLOR, 2);
-
-        const char *hours = "20";
-        const char *separator = ":";
-        const char *mins = "56";
-        gfx_draw_text(0, 90, hours, WHITE_COLOR, 7);
-        gfx_draw_text(105, 95, separator, WHITE_COLOR, 5);
-        gfx_draw_text(142, 90, mins, WHITE_COLOR, 7);
+        const char *time_separator = ":";
+        gfx_draw_text(105, 95, time_separator, WHITE_COLOR, 5);
 
         const char *steps_count = "1234";
         gfx_draw_text(90, 225, steps_count, WHITE_COLOR, 2);
     }
+
+    draw_seconds(event, &timeinfo);
+    draw_hours_minutes(event, &timeinfo);
+    draw_date(event, &timeinfo);
 }
 
 void weather_screen(enum Screen_Event event) {

@@ -40,3 +40,9 @@ bool sync_time(void) {
     esp_netif_sntp_deinit();
     return true;
 }
+
+void get_time(struct tm *timeinfo) {
+    time_t now;
+    time(&now);
+    localtime_r(&now, timeinfo);
+}
