@@ -6,7 +6,7 @@
 static const char *TAG = "HTTP";
 
 char response_buffer[RESPONSE_BUFFER_SIZE];
-size_t response_len = 0;
+uint32_t response_len = 0;
 
 esp_err_t http_event_handler(esp_http_client_event_t *evt) {
     switch (evt->event_id) {
