@@ -63,6 +63,15 @@ static void screen_change() {
     }
 }
 
+static bool weather_update() {
+    uint8_t is_request_succeed = http_get(weather_url);
+    if (is_request_succeed) {
+        return parse_weather();
+    } else {
+        return 0;
+    }
+}
+
 static void functionality_setup() {
     startup_screen(ENTER);
 
@@ -76,10 +85,10 @@ static void functionality_setup() {
     uint8_t is_sync_time = sync_time();
     gfx_draw_text(170, 100, init_statuses[is_sync_time].text, init_statuses[is_sync_time].color, 1);
     
-    const char *weather_update = "Weather update..";
-    gfx_draw_text(40, 120, weather_update, LIGHT_GREY_COLOR, 1);
-    uint8_t is_request_succeed = http_get(weather_url);
-    gfx_draw_text(170, 120, init_statuses[is_request_succeed].text, init_statuses[is_request_succeed].color, 1);
+    const char *weather_updated = "Weather update..";
+    gfx_draw_text(40, 120, weather_updated, LIGHT_GREY_COLOR, 1);
+    uint8_t is_weather_updated = weather_update();
+    gfx_draw_text(170, 120, init_statuses[is_weather_updated].text, init_statuses[is_weather_updated].color, 1);
 }
 
 void app_main() {

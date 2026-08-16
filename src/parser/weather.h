@@ -1,12 +1,15 @@
 #pragma once
 
-extern const char *weather_url;
 
 typedef struct {
-    float temperature;
-    float feels_like;
-    int humidity;
+    int temperature;
+    float wind_speed;
     int pressure;
+    int humidity;
+    char icon[8];
 } Weather_Data;
 
-void parse_weather();
+extern const char *weather_url;
+extern Weather_Data weather;
+
+bool parse_weather();

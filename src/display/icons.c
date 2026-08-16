@@ -1,5 +1,6 @@
 #include "icons.h"
 #include <stdint.h>
+#include <string.h>
 
 // ============================================================================== LOADING SPINNER ==============================================================================
 
@@ -50,3 +51,18 @@ const uint32_t heart_icon[ICON_ROWS_QTY] = {0x00000000, 0x00000000, 0x00000000, 
 const uint32_t weather_01d[ICON_ROWS_QTY] = {0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00018000, 0x00018000, 0x00018000, 0x00818100, 0x00C00300, 0x00600600, 0x0023C400,
                                              0x000FF000, 0x001C3800, 0x00181800, 0x00300800, 0x07B00DE0, 0x03300800, 0x00181800, 0x001C3800, 0x000FF000, 0x0007E000, 0x00600600,
                                              0x00C00300, 0x00818100, 0x00018000, 0x00018000, 0x00018000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000};
+
+const Weather_Icon_Map weather_icons[] = {
+    {"01d", weather_01d},
+};
+
+const uint32_t *get_weather_icon(const char *id) {
+    for (size_t i = 0; i < sizeof(weather_icons) / sizeof(weather_icons[0]); i++) {
+
+        if (strcmp(weather_icons[i].id, id) == 0) {
+            return weather_icons[i].bitmap;
+        }
+    }
+
+    return NULL;
+}
