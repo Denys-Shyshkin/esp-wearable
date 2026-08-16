@@ -3,6 +3,8 @@
 #include "display/font_8x8.h"
 #include "display/graphics.h"
 #include "display/icons.h"
+#include "http_requests/http_get.h"
+#include "parser/weather.h"
 #include "screens/screens.h"
 #include "time/time.h"
 #include "wifi/wifi.h"
@@ -17,7 +19,7 @@
 
 #define SUPERLOOP_DELAY 10
 
-static const char *TAG = "MAIN";
+// static const char *TAG = "MAIN";
 
 #define DEFAULT_BUTTON (Button){.gpio = -1, .btn_state = 1, .last_btn_state = 1, .s_last_btn_pressed = 0, .is_btn_pressed = 0}
 
@@ -73,6 +75,11 @@ static void functionality_setup() {
     gfx_draw_text(40, 100, time_synced, LIGHT_GREY_COLOR, 1);
     uint8_t is_sync_time = sync_time();
     gfx_draw_text(170, 100, init_statuses[is_sync_time].text, init_statuses[is_sync_time].color, 1);
+    
+    const char *weather_update = "Weather update..";
+    gfx_draw_text(40, 120, weather_update, LIGHT_GREY_COLOR, 1);
+    uint8_t is_request_succeed = http_get(weather_url);
+    gfx_draw_text(170, 120, init_statuses[is_request_succeed].text, init_statuses[is_request_succeed].color, 1);
 }
 
 void app_main() {
