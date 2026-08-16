@@ -1,6 +1,6 @@
 #include "weather.h"
 #include "cJSON.h"
-#include "http_requests/http_get.h"
+#include "services/http_requests/http_get.h"
 #include <esp_log.h>
 
 static const char *TAG = "WEATHER PARSER";

@@ -1,5 +1,5 @@
 #include "graphics.h"
-#include "display.h"
+#include "drivers/display/display.h"
 #include "esp_timer.h"
 #include "font_8x8.h"
 #include "icons.h"

@@ -1,10 +1,10 @@
 #include "screens.h"
-#include "display/display.h"
-#include "display/font_8x8.h"
-#include "display/graphics.h"
-#include "display/icons.h"
-#include "parser/weather.h"
-#include "time/time.h"
+#include "drivers/display/display.h"
+#include "services/graphics/font_8x8.h"
+#include "services/graphics/graphics.h"
+#include "services/graphics/icons.h"
+#include "services/parser/weather.h"
+#include "services/time/time.h"
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -117,7 +117,7 @@ static void draw_weather_icon(enum Screen_Event event) {
     if (displayed_icon != weather.icon || event == ENTER) {
         gfx_fill_rect(10, 45, 60, 60, BLACK_COLOR); // clear icon
         const uint32_t *icon = get_weather_icon(weather.icon);
-        
+
         if (icon != NULL) {
             gfx_draw_icon(10, 45, icon, WHITE_COLOR, 2);
         } else {
@@ -180,7 +180,7 @@ static void draw_humidity(enum Screen_Event event) {
     }
 }
 
-void weather_screen(enum Screen_Event event) {    
+void weather_screen(enum Screen_Event event) {
     if (event == ENTER) {
         display_clear();
 

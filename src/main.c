@@ -1,14 +1,14 @@
-#include "button/button.h"
-#include "display/display.h"
-#include "display/font_8x8.h"
-#include "display/graphics.h"
-#include "display/icons.h"
+#include "drivers/button/button.h"
+#include "drivers/display/display.h"
+#include "drivers/wifi/wifi.h"
 #include "esp_timer.h"
-#include "http_requests/http_get.h"
-#include "parser/weather.h"
-#include "screens/screens.h"
-#include "time/time.h"
-#include "wifi/wifi.h"
+#include "services/graphics/font_8x8.h"
+#include "services/graphics/graphics.h"
+#include "services/graphics/icons.h"
+#include "services/http_requests/http_get.h"
+#include "services/parser/weather.h"
+#include "services/screens/screens.h"
+#include "services/time/time.h"
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -17,7 +17,7 @@
 #define BUTTON_DOWN GPIO_NUM_8
 
 #define INIT_STATUSES_QTY 2
-#define WEATHER_UPDATE_DELAY_US 10 * 60 * 1000 * 1000 // 10 mins
+#define WEATHER_UPDATE_DELAY_US 30 * 60 * 1000 * 1000 // 30 mins
 
 #define SUPERLOOP_DELAY 10
 
