@@ -3,6 +3,7 @@
 #include "display/font_8x8.h"
 #include "display/graphics.h"
 #include "display/icons.h"
+#include "esp_timer.h"
 #include "http_requests/http_get.h"
 #include "parser/weather.h"
 #include "screens/screens.h"
@@ -16,6 +17,7 @@
 #define BUTTON_DOWN GPIO_NUM_8
 
 #define INIT_STATUSES_QTY 2
+#define WEATHER_UPDATE_DELAY_US 10 * 60 * 1000 * 1000 // 10 mins
 
 #define SUPERLOOP_DELAY 10
 
@@ -64,9 +66,18 @@ static void screen_change() {
 }
 
 static bool weather_update() {
-    uint8_t is_request_succeed = http_get(weather_url);
-    if (is_request_succeed) {
-        return parse_weather();
+    uint32_t now = esp_timer_get_time();
+    static uint32_t last_weather_update = 0;
+
+    if (now - last_weather_update >= WEATHER_UPDATE_DELAY_US || last_weather_update == 0) {
+        last_weather_update = now;
+
+        uint8_t is_request_succeed = http_get(weather_url);
+        if (is_request_succeed) {
+            return parse_weather();
+        } else {
+            return 0;
+        }
     } else {
         return 0;
     }
@@ -84,7 +95,7 @@ static void functionality_setup() {
     gfx_draw_text(40, 100, time_synced, LIGHT_GREY_COLOR, 1);
     uint8_t is_sync_time = sync_time();
     gfx_draw_text(170, 100, init_statuses[is_sync_time].text, init_statuses[is_sync_time].color, 1);
-    
+
     const char *weather_updated = "Weather update..";
     gfx_draw_text(40, 120, weather_updated, LIGHT_GREY_COLOR, 1);
     uint8_t is_weather_updated = weather_update();
@@ -99,6 +110,8 @@ void app_main() {
     button_init(&btn_down, BUTTON_DOWN);
 
     while (1) {
+        weather_update();
+
         buttons_reading();
         screen_change();
         screen_manager();

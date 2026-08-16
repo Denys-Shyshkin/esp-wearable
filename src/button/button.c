@@ -18,7 +18,7 @@ void button_init(Button *btn, gpio_num_t gpio) {
 }
 
 void button_is_pressed(Button *btn) {
-    int64_t now = esp_timer_get_time();
+    uint32_t now = esp_timer_get_time();
 
     bool button_read = gpio_get_level(btn->gpio);
 
