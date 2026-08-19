@@ -31,6 +31,7 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 |  |  | Push button | 2 | user input |
 |  |  | Capacitor 0.1 uF | 1 | power supply filter |
 |  |  | Capacitor 10 uF | 1 | power supply filter |
+|  |  | Resistor 4.7 kOhm | 2 | I2C lines pull-ups |
 |  |  | Resistor 3.3 kOhm | 1 | to create voltage divider |
 |  |  | Resistor 6.8 kOhm | 1 | to create voltage divider |
 
