@@ -1,7 +1,9 @@
 #include "weather.h"
 #include "cJSON.h"
 #include "services/http_requests/http_get.h"
+#include "services/time/time.h"
 #include <esp_log.h>
+#include <time.h>
 
 static const char *TAG = "WEATHER PARSER";
 
@@ -70,11 +72,13 @@ bool parse_weather() {
         }
     }
 
-    ESP_LOGI(TAG, "Temperature: %d °C", weather.temperature);
-    ESP_LOGI(TAG, "Wind speed: %.1f km/h", weather.wind_speed);
-    ESP_LOGI(TAG, "Pressure: %d hPa", weather.pressure);
-    ESP_LOGI(TAG, "Humidity: %d %%", weather.humidity);
-    ESP_LOGI(TAG, "Weather icon: %s", weather.icon);
+    struct tm timeinfo;
+    get_time(&timeinfo);
+
+    char time_buff[6];
+    strftime(time_buff, sizeof(time_buff), "%H:%M", &timeinfo);
+
+    ESP_LOGI(TAG, "Weather last parsing: %s", time_buff);
 
     cJSON_Delete(root);
 

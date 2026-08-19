@@ -1,5 +1,8 @@
+#include "driver/i2c_master.h"
 #include "drivers/button/button.h"
 #include "drivers/display/display.h"
+#include "drivers/i2c/i2c.h"
+#include "drivers/temp_sensor/temp_sensor.h"
 #include "drivers/wifi/wifi.h"
 #include "esp_timer.h"
 #include "services/graphics/font_8x8.h"
@@ -21,7 +24,7 @@
 
 #define SUPERLOOP_DELAY 10
 
-// static const char *TAG = "MAIN";
+static const char *TAG = "MAIN";
 
 #define DEFAULT_BUTTON (Button){.gpio = -1, .btn_state = 1, .last_btn_state = 1, .s_last_btn_pressed = 0, .is_btn_pressed = 0}
 
@@ -37,6 +40,9 @@ Init_Status const fail_status = {.text = "FAIL", .color = RED_COLOR};
 Init_Status const ok_status = {.text = "OK", .color = GREEN_COLOR};
 
 Init_Status init_statuses[INIT_STATUSES_QTY] = {fail_status, ok_status};
+
+i2c_master_bus_handle_t i2c_bus_0;
+temp_sensor sensor;
 
 static void buttons_reading() {
     button_is_pressed(&btn_up);
@@ -104,10 +110,21 @@ static void functionality_setup() {
 
 void app_main() {
     display_init();
+    i2c_bus_init(&i2c_bus_0);
+
+    temp_sensor_init(&i2c_bus_0, &sensor);
+
     functionality_setup();
 
     button_init(&btn_up, BUTTON_UP);
     button_init(&btn_down, BUTTON_DOWN);
+
+    i2c_scanner(&i2c_bus_0);
+
+    int32_t temperature;
+    temp_sensor_read_temperature(&sensor, &temperature);
+
+    ESP_LOGI(TAG, "Temperature: %.2f \n", temperature / 100.0);
 
     while (1) {
         weather_update();
