@@ -32,9 +32,6 @@ void startup_screen(enum Screen_Event event) {
         const char *startup = "STARTING";
         gfx_draw_text(60, 20, startup, SEA_GREEN_COLOR, 2);
 
-        // const char *mui_init = "IMU init........";
-        // gfx_draw_text(40, 140, mui_init, LIGHT_GREY_COLOR, 1);
-
         // const char *hr_sensor = "HR sensor.......";
         // gfx_draw_text(40, 160, hr_sensor, LIGHT_GREY_COLOR, 1);
     }

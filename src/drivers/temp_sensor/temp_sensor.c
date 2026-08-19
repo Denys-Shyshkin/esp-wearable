@@ -1,6 +1,5 @@
 #include "temp_sensor.h"
 #include "driver/i2c_master.h"
-#include "drivers/i2c/i2c.h"
 #include <esp_log.h>
 
 void temp_sensor_init(i2c_master_bus_handle_t *bus, temp_sensor *sensor) {
