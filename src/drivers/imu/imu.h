@@ -17,5 +17,6 @@ typedef struct {
 } imu_raw_data;
 
 esp_err_t imu_init(i2c_master_bus_handle_t *bus, imu_sensor *imu);
-esp_err_t imu_read_raw(imu_sensor *imu, imu_raw_data *raw);
 esp_err_t imu_pedometer_config(imu_sensor *imu);
+esp_err_t imu_read_raw(imu_sensor *imu, imu_raw_data *raw);
+esp_err_t imu_read_steps(imu_sensor *imu, uint32_t *steps);

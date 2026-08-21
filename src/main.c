@@ -154,7 +154,9 @@ void app_main() {
         screen_change();
         screen_manager();
 
-        // ESP_LOGI(TAG, "Current screen number: %d", screen_number);
+        uint32_t steps_count;
+        imu_read_steps(&imu, &steps_count);
+        ESP_LOGI(TAG, "Steps count: %d", steps_count);
 
         vTaskDelay(pdMS_TO_TICKS(SUPERLOOP_DELAY));
     }
