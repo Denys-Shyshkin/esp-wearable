@@ -1,14 +1,18 @@
 #include "imu.h"
 #include "driver/i2c_master.h"
+#include "esp_timer.h"
 #include <esp_log.h>
 
 #define QMI8658_I2C_ADDR 0x6B
 #define QMI8658_ID_ADDR 0x00
-#define QMI8658_OUTPUT_STATUS_ADDR 0x2E
+#define QMI8658_OUTPUT_STATUSINT_ADDR 0x2D
+#define QMI8658_OUTPUT_STATUS0_ADDR 0x2E
 #define QMI8658_AX_L_ADDR 0x35
+#define QMI8658_STEP_CNT_LOW_ADDR 0x05
 
 #define QMI8658_ID 0x05
 #define I2C_TIMEOUT_MS 100
+#define CMD_DONE_TIMEOUT_US 1000 * 1000
 
 // SIM            = 0 - no SPI but I²C
 // ADDR_AI        = 1 - enable address auto-increment
@@ -38,7 +42,29 @@
 // gEN        = 1 - enable gyro
 // aEN        = 1 - enable accelerometer
 #define QMI8658_CTRL7_VALUE 0x03
+#define QMI8658_CTRL7_VALUE_DISABLED 0x00
 #define QMI8658_CTRL7_ADDR 0x08
+
+#define QMI8658_CTRL9_ACK 0x00
+#define QMI8658_CTRL9_CONFIGURE_PEDOMETER_VALUE 0x0D
+#define QMI8658_CTRL9_ADDR 0x0A
+
+// Pedometer first group config
+// CAL1 - ped_sample_cnt = 50
+// CAL2 - ped_fix_peak2peak ≈ 200 mg
+// CAL3 - ped_fix_peak ≈ 100 mg
+// CAL4 - parameters group 1
+#define CAL1_L_1 0x32
+#define CAL1_H_1 0x00
+#define CAL2_L_1 0xCC
+#define CAL2_H_1 0x00
+#define CAL3_L_1 0x66
+#define CAL3_H_1 0x00
+#define CAL4_L_1 0x00
+#define CAL4_H_1 0x01
+#define CAL1_L_ADDR 0x0B
+
+#define PEDOMETER_CONFIG_LENGTH 8
 
 static const char *TAG = "IMU";
 
@@ -124,7 +150,7 @@ static void imu_config(imu_sensor *imu) {
     imu_config_ctrl7(imu);
 }
 
-bool imu_init(i2c_master_bus_handle_t *bus, imu_sensor *imu) {
+esp_err_t imu_init(i2c_master_bus_handle_t *bus, imu_sensor *imu) {
     i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
         .device_address = QMI8658_I2C_ADDR,
@@ -138,10 +164,10 @@ bool imu_init(i2c_master_bus_handle_t *bus, imu_sensor *imu) {
     ESP_LOGI(TAG, "Who am I: 0x%02X", imu_id);
     if (imu_id == QMI8658_ID) {
         imu_config(imu);
-        return true;
+        return ESP_OK;
     } else {
         ESP_LOGI(TAG, "Initialization failed: %s", esp_err_to_name(err));
-        return false;
+        return err;
     }
 }
 
@@ -155,7 +181,7 @@ esp_err_t imu_read_raw(imu_sensor *imu, imu_raw_data *raw) {
     }
 
     uint8_t status;
-    esp_err_t status_err = imu_read_regs(imu, QMI8658_OUTPUT_STATUS_ADDR, &status, 1);
+    esp_err_t status_err = imu_read_regs(imu, QMI8658_OUTPUT_STATUS0_ADDR, &status, 1);
 
     if (status_err != ESP_OK) {
         return status_err;
@@ -182,4 +208,93 @@ esp_err_t imu_read_raw(imu_sensor *imu, imu_raw_data *raw) {
     }
 
     return ESP_ERR_NOT_FINISHED;
+}
+
+static esp_err_t imu_disable(imu_sensor *imu) {
+    return imu_write_single_reg(imu, QMI8658_CTRL7_ADDR, QMI8658_CTRL7_VALUE_DISABLED);
+}
+
+static esp_err_t imu_pedometer_config_group_1(imu_sensor *imu) {
+    if (imu == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    uint8_t config[PEDOMETER_CONFIG_LENGTH] = {CAL1_L_1, CAL1_H_1, CAL2_L_1, CAL2_H_1, CAL3_L_1, CAL3_H_1, CAL4_L_1, CAL4_H_1};
+
+    uint8_t start_addr = CAL1_L_ADDR;
+    for (int i = 0; i < PEDOMETER_CONFIG_LENGTH; i++) {
+        esp_err_t write_error = imu_write_single_reg(imu, start_addr + i, config[i]);
+
+        if (write_error != ESP_OK) {
+            return write_error;
+        }
+    }
+
+    uint8_t config_buffer[PEDOMETER_CONFIG_LENGTH];
+    esp_err_t read_err = imu_read_regs(imu, CAL1_L_ADDR, config_buffer, PEDOMETER_CONFIG_LENGTH);
+
+    if (read_err != ESP_OK) {
+        return read_err;
+    }
+
+    return ESP_OK;
+}
+
+static esp_err_t imu_check_cmd_done(imu_sensor *imu) {
+    uint8_t status = 0;
+    uint64_t start_time = esp_timer_get_time();
+
+    while ((status & (1 << 7)) == 0) {
+        uint64_t now = esp_timer_get_time();
+
+        esp_err_t status_error = imu_read_regs(imu, QMI8658_OUTPUT_STATUSINT_ADDR, &status, 1);
+        if (status_error != ESP_OK) {
+            return status_error;
+        }
+
+        if (now - start_time > CMD_DONE_TIMEOUT_US) {
+            return ESP_ERR_TIMEOUT;
+        }
+    }
+
+    ESP_LOGI(TAG, "CmdDone");
+
+    return ESP_OK;
+}
+
+static esp_err_t imu_apply_config(imu_sensor *imu) {
+    return imu_write_single_reg(imu, QMI8658_CTRL9_ADDR, QMI8658_CTRL9_CONFIGURE_PEDOMETER_VALUE);
+}
+
+static esp_err_t imu_ack_command(imu_sensor *imu) {
+    return imu_write_single_reg(imu, QMI8658_CTRL9_ADDR, QMI8658_CTRL9_ACK);
+}
+
+esp_err_t imu_pedometer_config(imu_sensor *imu) {
+    esp_err_t disable_error = imu_disable(imu);
+    if (disable_error != ESP_OK) {
+        return disable_error;
+    }
+
+    esp_err_t config_1_error = imu_pedometer_config_group_1(imu);
+    if (config_1_error != ESP_OK) {
+        return config_1_error;
+    }
+
+    esp_err_t apply_error = imu_apply_config(imu);
+    if (apply_error != ESP_OK) {
+        return apply_error;
+    }
+
+    esp_err_t check_error = imu_check_cmd_done(imu);
+    if (check_error != ESP_OK) {
+        return check_error;
+    }
+
+    esp_err_t ack_error = imu_ack_command(imu);
+    if (ack_error != ESP_OK) {
+        return ack_error;
+    }
+
+    return ESP_OK;
 }

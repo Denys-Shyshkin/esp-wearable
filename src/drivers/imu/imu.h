@@ -16,5 +16,6 @@ typedef struct {
     int16_t gyro_z;
 } imu_raw_data;
 
-bool imu_init(i2c_master_bus_handle_t *bus, imu_sensor *imu);
+esp_err_t imu_init(i2c_master_bus_handle_t *bus, imu_sensor *imu);
 esp_err_t imu_read_raw(imu_sensor *imu, imu_raw_data *raw);
+esp_err_t imu_pedometer_config(imu_sensor *imu);
