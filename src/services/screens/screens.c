@@ -9,21 +9,35 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <time.h>
+#include "drivers/imu/imu.h"
 
 #define HEART_DRAW_DELAY_US 400 * 1000
 #define HEART_ANIM_FRAMES_QTY 2
 
 static const char *TAG = "SCREENS";
 
-Animation_Frame beating_heart[HEART_ANIM_FRAMES_QTY] = {
+static Animation_Frame beating_heart[HEART_ANIM_FRAMES_QTY] = {
     {.x = 105, .y = 65, .icon = heart_icon, .color = RED_COLOR, .scale = 1},
     {.x = 90, .y = 50, .icon = heart_icon, .color = RED_COLOR, .scale = 2},
 };
 
 enum Screen screen_number = STARTUP;
-enum Screen last_screen_number = STARTUP;
+static enum Screen last_screen_number = STARTUP;
 
 const uint8_t MAX_SCREENS_QTY = TOTAL_COUNT - 1;
+
+static uint8_t get_steps_count_position(uint32_t steps) {
+    if (steps > 9999)
+        return 80;
+    else if (steps > 999)
+        return 90;
+    else if (steps > 99)
+        return 95;
+    else if (steps > 9)
+        return 105;
+    else
+        return 115;
+}
 
 void startup_screen(enum Screen_Event event) {
     if (event == ENTER) {
@@ -86,7 +100,23 @@ static void draw_date(enum Screen_Event event, struct tm *timeinfo) {
     }
 }
 
-void time_screen(enum Screen_Event event) {
+static void draw_steps_count(enum Screen_Event event, imu_sensor *imu) {
+    static uint32_t displayed_steps = 0;
+
+    uint32_t steps_count;
+    imu_read_steps(imu, &steps_count);
+
+    if (displayed_steps != steps_count || event == ENTER) {
+        gfx_fill_rect(70, 225, 100, 30, BLACK_COLOR); // clear steps
+        char steps_buff[6];
+        snprintf(steps_buff, sizeof(steps_buff), "%ld", steps_count);
+        gfx_draw_text(get_steps_count_position(steps_count), 225, steps_buff, WHITE_COLOR, 2);
+
+        displayed_steps = steps_count;
+    }
+}
+
+static void time_screen(enum Screen_Event event, imu_sensor *imu) {
     struct tm timeinfo;
     get_time(&timeinfo);
 
@@ -98,14 +128,13 @@ void time_screen(enum Screen_Event event) {
 
         const char *time_separator = ":";
         gfx_draw_text(105, 95, time_separator, WHITE_COLOR, 5);
-
-        const char *steps_count = "1234";
-        gfx_draw_text(90, 225, steps_count, WHITE_COLOR, 2);
     }
 
     draw_seconds(event, &timeinfo);
     draw_hours_minutes(event, &timeinfo);
     draw_date(event, &timeinfo);
+
+    draw_steps_count(event, imu);
 }
 
 static void draw_weather_icon(enum Screen_Event event) {
@@ -177,7 +206,7 @@ static void draw_humidity(enum Screen_Event event) {
     }
 }
 
-void weather_screen(enum Screen_Event event) {
+static void weather_screen(enum Screen_Event event) {
     if (event == ENTER) {
         display_clear();
 
@@ -205,7 +234,7 @@ void weather_screen(enum Screen_Event event) {
     draw_humidity(event);
 }
 
-void heart_screen(enum Screen_Event event) {
+static void heart_screen(enum Screen_Event event) {
     if (event == ENTER) {
         display_clear();
 
@@ -219,7 +248,7 @@ void heart_screen(enum Screen_Event event) {
     gfx_animation(90, 50, 65, 60, beating_heart, HEART_ANIM_FRAMES_QTY, HEART_DRAW_DELAY_US);
 }
 
-void screen_manager() {
+void screen_manager(imu_sensor *imu) {
     enum Screen_Event event = UPDATE;
 
     if (screen_number != last_screen_number) {
@@ -233,7 +262,7 @@ void screen_manager() {
         break;
 
     case TIME:
-        time_screen(event);
+        time_screen(event, imu);
         break;
 
     case WEATHER:

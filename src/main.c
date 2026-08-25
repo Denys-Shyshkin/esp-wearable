@@ -132,12 +132,6 @@ static void functionality_setup() {
     gfx_draw_text(170, 140, init_statuses[is_pedometer_inited].text, init_statuses[is_pedometer_inited].color, 1);
 }
 
-static void imu_readings() {
-    if (imu_read_raw(&imu, &imu_raw) == ESP_OK) {
-        ESP_LOGI(TAG, "ACC: %d %d %d | GYR: %d %d %d", imu_raw.accel_x, imu_raw.accel_y, imu_raw.accel_z, imu_raw.gyro_x, imu_raw.gyro_y, imu_raw.gyro_z);
-    }
-}
-
 void app_main() {
     display_init();
     i2c_bus_init(&i2c_bus_0);
@@ -152,11 +146,7 @@ void app_main() {
 
         buttons_reading();
         screen_change();
-        screen_manager();
-
-        uint32_t steps_count;
-        imu_read_steps(&imu, &steps_count);
-        ESP_LOGI(TAG, "Steps count: %d", steps_count);
+        screen_manager(&imu);
 
         vTaskDelay(pdMS_TO_TICKS(SUPERLOOP_DELAY));
     }
