@@ -5,6 +5,8 @@
 #define PIN_SDA GPIO_NUM_1
 #define PIN_SCL GPIO_NUM_0
 
+#define I2C_TIMEOUT_MS 100
+
 static const char *TAG = "I2C";
 
 void i2c_scanner(i2c_master_bus_handle_t *bus) {
@@ -28,4 +30,25 @@ void i2c_bus_init(i2c_master_bus_handle_t *bus) {
         .flags.enable_internal_pullup = true,
     };
     ESP_ERROR_CHECK(i2c_new_master_bus(&bus_cfg, bus));
+}
+
+esp_err_t i2c_read_regs(i2c_master_dev_handle_t i2c_dev, uint8_t reg, uint8_t *data, size_t len) {
+    if (i2c_dev == NULL || data == NULL || len == 0) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    return i2c_master_transmit_receive(i2c_dev, &reg, 1, data, len, I2C_TIMEOUT_MS);
+}
+
+esp_err_t i2c_write_single_reg(i2c_master_dev_handle_t i2c_dev, uint8_t reg, uint8_t value) {
+    if (i2c_dev == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    uint8_t data[2];
+
+    data[0] = reg;
+    data[1] = value;
+
+    return i2c_master_transmit(i2c_dev, data, sizeof(data), I2C_TIMEOUT_MS);
 }
