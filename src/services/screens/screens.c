@@ -45,9 +45,6 @@ void startup_screen(enum Screen_Event event) {
 
         const char *startup = "STARTING";
         gfx_draw_text(60, 20, startup, SEA_GREEN_COLOR, 2);
-
-        // const char *hr_sensor = "HR sensor.......";
-        // gfx_draw_text(40, 160, hr_sensor, LIGHT_GREY_COLOR, 1);
     }
 }
 
@@ -69,10 +66,10 @@ static void draw_hours_minutes(enum Screen_Event event, struct tm *timeinfo) {
     static uint8_t displayed_hours;
 
     if (displayed_minutes != timeinfo->tm_min || event == ENTER) {
-        gfx_fill_rect(142, 90, 100, 50, BLACK_COLOR); // clear mins
+        gfx_fill_rect(140, 90, 100, 50, BLACK_COLOR); // clear mins
         char mins_buff[6];
         strftime(mins_buff, sizeof(mins_buff), "%M", timeinfo);
-        gfx_draw_text(142, 90, mins_buff, WHITE_COLOR, 7);
+        gfx_draw_text(140, 90, mins_buff, WHITE_COLOR, 7);
 
         displayed_minutes = timeinfo->tm_min;
     }

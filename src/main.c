@@ -1,6 +1,7 @@
 #include "driver/i2c_master.h"
 #include "drivers/button/button.h"
 #include "drivers/display/display.h"
+#include "drivers/hr/hr.h"
 #include "drivers/i2c/i2c.h"
 #include "drivers/imu/imu.h"
 #include "drivers/wifi/wifi.h"
@@ -43,6 +44,7 @@ Init_Status init_statuses[INIT_STATUSES_QTY] = {fail_status, ok_status};
 
 i2c_master_bus_handle_t i2c_bus_0;
 imu_sensor imu;
+hr_sensor hr;
 imu_raw_data imu_raw;
 
 static void buttons_reading() {
@@ -108,6 +110,17 @@ static bool pedometer_init(i2c_master_bus_handle_t *bus, imu_sensor *imu) {
     return true;
 }
 
+static bool hr_sensor_init(i2c_master_bus_handle_t *bus, hr_sensor *hr) {
+    esp_err_t hr_init_error = hr_init(&i2c_bus_0, hr);
+
+    if (hr_init_error != ESP_OK) {
+        ESP_LOGI(TAG, "HR initialization failed: %s", esp_err_to_name(hr_init_error));
+        return false;
+    }
+
+    return true;
+}
+
 static void functionality_setup() {
     startup_screen(ENTER);
 
@@ -130,6 +143,11 @@ static void functionality_setup() {
     gfx_draw_text(40, 140, mui_init, LIGHT_GREY_COLOR, 1);
     uint8_t is_pedometer_inited = pedometer_init(&i2c_bus_0, &imu);
     gfx_draw_text(170, 140, init_statuses[is_pedometer_inited].text, init_statuses[is_pedometer_inited].color, 1);
+
+    const char *hr_sensor = "HR sensor.......";
+    gfx_draw_text(40, 160, hr_sensor, LIGHT_GREY_COLOR, 1);
+    uint8_t is_hr_sensor_init = hr_sensor_init(&i2c_bus_0, &hr);
+    gfx_draw_text(170, 160, init_statuses[is_hr_sensor_init].text, init_statuses[is_hr_sensor_init].color, 1);
 }
 
 void app_main() {
