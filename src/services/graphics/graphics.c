@@ -139,7 +139,7 @@ void gfx_draw_alignment_lines() {
     gfx_draw_line(160, 0, 160, 240, YELLOW_COLOR);
 }
 
-void gfx_animation(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const Animation_Frame frames[], uint8_t frames_qty, uint32_t frames_delay) {
+void gfx_animation(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const animation_frame frames[], uint8_t frames_qty, uint32_t frames_delay) {
     uint32_t now = esp_timer_get_time();
 
     static uint8_t current_frame = 0;

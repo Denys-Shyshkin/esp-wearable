@@ -8,7 +8,7 @@ typedef struct {
     bool last_btn_state;
     uint64_t s_last_btn_pressed;
     bool is_btn_pressed;
-} Button;
+} button;
 
-void button_init(Button *btn, gpio_num_t gpio);
-void button_is_pressed(Button *btn);
+void button_init(button *btn, gpio_num_t gpio);
+void button_is_pressed(button *btn);

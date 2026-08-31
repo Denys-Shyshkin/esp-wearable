@@ -7,9 +7,9 @@ typedef struct {
     int pressure;
     int humidity;
     char icon[8];
-} Weather_Data;
+} weather_data;
 
 extern const char *weather_url;
-extern Weather_Data weather;
+extern weather_data weather;
 
 bool parse_weather();

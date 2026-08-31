@@ -27,20 +27,20 @@
 
 static const char *TAG = "MAIN";
 
-#define DEFAULT_BUTTON (Button){.gpio = -1, .btn_state = 1, .last_btn_state = 1, .s_last_btn_pressed = 0, .is_btn_pressed = 0}
+#define DEFAULT_BUTTON (button){.gpio = -1, .btn_state = 1, .last_btn_state = 1, .s_last_btn_pressed = 0, .is_btn_pressed = 0}
 
-Button btn_up = DEFAULT_BUTTON;
-Button btn_down = DEFAULT_BUTTON;
+button btn_up = DEFAULT_BUTTON;
+button btn_down = DEFAULT_BUTTON;
 
 typedef struct {
     const char *text;
     uint16_t color;
-} Init_Status;
+} init_status;
 
-Init_Status const fail_status = {.text = "FAIL", .color = RED_COLOR};
-Init_Status const ok_status = {.text = "OK", .color = GREEN_COLOR};
+init_status const fail_status = {.text = "FAIL", .color = RED_COLOR};
+init_status const ok_status = {.text = "OK", .color = GREEN_COLOR};
 
-Init_Status init_statuses[INIT_STATUSES_QTY] = {fail_status, ok_status};
+init_status init_statuses[INIT_STATUSES_QTY] = {fail_status, ok_status};
 
 i2c_master_bus_handle_t i2c_bus_0;
 imu_sensor imu;

@@ -19,7 +19,7 @@ typedef struct {
     const uint32_t *icon;
     uint16_t color;
     uint8_t scale;
-} Animation_Frame;
+} animation_frame;
 
 void gfx_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 void gfx_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color);
@@ -30,4 +30,4 @@ void gfx_draw_text(int16_t x, int16_t y, const char *text, uint16_t color, uint8
 void gfx_draw_spec_char(int16_t x, int16_t y, const uint8_t special_char[], uint16_t color, uint8_t scale);
 void gfx_draw_icon(int16_t x, int16_t y, const uint32_t *icon, uint16_t color, uint8_t scale);
 void gfx_draw_alignment_lines();
-void gfx_animation(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const Animation_Frame frames[], uint8_t frames_qty, uint32_t frames_delay);
+void gfx_animation(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const animation_frame frames[], uint8_t frames_qty, uint32_t frames_delay);

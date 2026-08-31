@@ -122,7 +122,7 @@ const uint32_t weather_50n[ICON_ROWS_QTY] = {0x00000000, 0x00000000, 0x00000000,
 
 //  ============================================================================== HELPERS ==============================================================================
 
-const Weather_Icon_Map weather_icons[TOTAL_WEATHER_ICONS] = {
+const weather_icon_map weather_icons[TOTAL_WEATHER_ICONS] = {
     {"01d", weather_01d}, {"01n", weather_01n}, {"02d", weather_02d}, {"02n", weather_02n}, {"03d", weather_03d}, {"03n", weather_03n},
     {"04d", weather_04d}, {"04n", weather_04n}, {"09d", weather_09d}, {"09n", weather_09n}, {"10d", weather_10d}, {"10n", weather_10n},
     {"11d", weather_11d}, {"11n", weather_11n}, {"13d", weather_13d}, {"13n", weather_13n}, {"50d", weather_50d}, {"50n", weather_50n},

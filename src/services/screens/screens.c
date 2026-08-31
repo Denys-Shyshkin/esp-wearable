@@ -16,7 +16,7 @@
 
 static const char *TAG = "SCREENS";
 
-static Animation_Frame beating_heart[HEART_ANIM_FRAMES_QTY] = {
+static animation_frame beating_heart[HEART_ANIM_FRAMES_QTY] = {
     {.x = 105, .y = 65, .icon = heart_icon, .color = RED_COLOR, .scale = 1},
     {.x = 90, .y = 50, .icon = heart_icon, .color = RED_COLOR, .scale = 2},
 };

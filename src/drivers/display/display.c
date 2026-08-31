@@ -25,9 +25,7 @@ static const char *TAG = "DISPLAY";
 
 static esp_lcd_panel_handle_t panel_handle = NULL;
 
-// ========================== HELPERS ==========================
-
-bool display_validate_start(uint16_t x, uint16_t y) {
+static bool display_validate_start(uint16_t x, uint16_t y) {
     if (x >= LCD_H_RES || y >= LCD_V_RES) {
         return false;
     }
@@ -56,8 +54,6 @@ void display_clip_rect(uint16_t x, uint16_t y, uint16_t *width, uint16_t *height
         *height = LCD_V_RES - y;
     }
 }
-
-// ========================== INIT ==========================
 
 void display_init() {
     ESP_LOGI(TAG, "Turn on LCD backlight");
@@ -108,8 +104,6 @@ void display_init() {
 
     display_clear();
 }
-
-// ========================== DRAW ==========================
 
 void display_draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
     if (!display_validate_start(x, y)) {

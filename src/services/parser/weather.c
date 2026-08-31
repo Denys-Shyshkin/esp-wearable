@@ -9,7 +9,7 @@ static const char *TAG = "WEATHER PARSER";
 
 const char *weather_url = "http://jaam.net.ua/weather_statuses_v2.json";
 
-Weather_Data weather = {0};
+weather_data weather = {0};
 
 bool parse_weather() {
     response_buffer[response_len] = '\0';

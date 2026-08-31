@@ -156,6 +156,8 @@ esp_err_t hr_init(i2c_master_bus_handle_t *bus, hr_sensor *hr) {
 }
 
 esp_err_t hr_read_raw(hr_sensor *hr, bool *is_available, uint32_t *raw) {
+    *is_available = false;
+
     uint8_t wr_ptr;
     esp_err_t wr_ptr_error = i2c_read_regs(hr->i2c_dev, FIFO_WR_PTR_ADDR, &wr_ptr, 1);
     if (wr_ptr_error != ESP_OK) {
@@ -169,8 +171,6 @@ esp_err_t hr_read_raw(hr_sensor *hr, bool *is_available, uint32_t *raw) {
     }
 
     if (wr_ptr == rd_ptr) {
-        *is_available = false;
-
         return ESP_OK;
     }
 
