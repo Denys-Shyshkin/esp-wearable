@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define MAX_RETRY_COUNT 15
+#define MAX_RETRY_COUNT 5
 
 static const char *TAG = "TIME";
 

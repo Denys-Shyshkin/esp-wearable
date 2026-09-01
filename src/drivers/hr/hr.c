@@ -1,6 +1,7 @@
 #include "hr.h"
 #include "driver/i2c_master.h"
 #include "drivers/i2c/i2c.h"
+#include "esp_timer.h"
 #include <esp_log.h>
 
 #define I2C_ADDR 0x57
@@ -28,6 +29,15 @@
 // 0x10 = 16 × 0.2 mA = 3.2 mA
 #define PULSE_AMPLITUDE_1_VALUE 0x10
 #define PULSE_AMPLITUDE_1_ADDR 0x0C
+
+#define HR_WARMUP_SAMPLES 300 // ~3s at 100Hz, raw signal settle after init
+#define HR_ALPHA 0.02f        // smoothing factor
+#define BEAT_THRESHOLD_UPPER 100
+#define BEAT_THRESHOLD_LOWER -150
+#define BPM_THRESHOLD_UPPER 180
+#define BPM_THRESHOLD_LOWER 40
+#define DETECTION_THRESHOLD 8000
+#define BMP_AVERAGE_TIME 15 * 1000 * 1000
 
 static const char *TAG = "HR";
 
@@ -182,6 +192,90 @@ esp_err_t hr_read_raw(hr_sensor *hr, bool *is_available, uint32_t *raw) {
 
     *raw = hr_combine_fifo_data(fifo_data[0], fifo_data[1], fifo_data[2]);
     *is_available = true;
+
+    return ESP_OK;
+}
+
+static float hr_filter_raw_data(uint32_t *raw) {
+    static float dc_estimate;
+    static bool is_first_read = true;
+
+    float sample = (float)*raw;
+
+    if (is_first_read) {
+        is_first_read = false;
+        dc_estimate = sample;
+    }
+
+    dc_estimate = dc_estimate + HR_ALPHA * (sample - dc_estimate);
+
+    return sample - dc_estimate;
+}
+
+static uint8_t hr_interval_to_bpm(uint32_t *interval_time) {
+    return 60 * 1000 * 1000 / *interval_time;
+}
+
+esp_err_t hr_read_bpm(hr_sensor *hr) {
+    bool is_available;
+    uint32_t raw;
+    uint32_t now = esp_timer_get_time();
+
+    static bool rising_state = false;
+    static uint32_t beat_interval_qty = 0;
+    static uint32_t last_beat_time = 0;
+    static uint32_t last_bpm_record = 0;
+    static uint32_t interval_sums = 0;
+    static uint32_t warmup_samples_left = HR_WARMUP_SAMPLES;
+
+    esp_err_t raw_error = hr_read_raw(hr, &is_available, &raw);
+    if (raw_error != ESP_OK) {
+        return raw_error;
+    }
+
+    if (is_available) {
+        if (raw > DETECTION_THRESHOLD) {
+            if (warmup_samples_left > 0) {
+                warmup_samples_left--;
+                return ESP_OK;
+            }
+
+            float filtered_signal = hr_filter_raw_data(&raw);
+
+            if (rising_state && filtered_signal > BEAT_THRESHOLD_UPPER) {
+                rising_state = false;
+
+                if (last_beat_time != 0) {
+                    uint32_t interval = now - last_beat_time;
+                    uint32_t bpm = hr_interval_to_bpm(&interval);
+
+                    if (bpm >= BPM_THRESHOLD_LOWER && bpm <= BPM_THRESHOLD_UPPER) {
+                        beat_interval_qty++;
+                        interval_sums += interval;
+                    }
+                }
+
+                last_beat_time = now;
+            } else if (!rising_state && filtered_signal < BEAT_THRESHOLD_LOWER) {
+                rising_state = true;
+            }
+
+            if (now - last_bpm_record >= BMP_AVERAGE_TIME) {
+                if (beat_interval_qty > 0) {
+                    uint32_t avg_interval_time = interval_sums / beat_interval_qty;
+                    uint32_t bpm = hr_interval_to_bpm(&avg_interval_time);
+
+                    ESP_LOGI(TAG, "BPM: %ld | Beat interval qty: %ld", bpm, beat_interval_qty);
+                }
+
+                last_bpm_record = now;
+                interval_sums = 0;
+                beat_interval_qty = 0;
+            }
+        } else {
+            warmup_samples_left = HR_WARMUP_SAMPLES;
+        }
+    }
 
     return ESP_OK;
 }
