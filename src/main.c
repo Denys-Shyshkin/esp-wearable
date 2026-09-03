@@ -164,9 +164,7 @@ void app_main() {
 
         buttons_reading();
         screen_change();
-        screen_manager(&imu);
-
-        hr_read_bpm(&hr);
+        screen_manager(&imu, &hr);
 
         vTaskDelay(pdMS_TO_TICKS(SUPERLOOP_DELAY));
     }

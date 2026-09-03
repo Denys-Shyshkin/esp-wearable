@@ -10,6 +10,7 @@
 #include <freertos/task.h>
 #include <time.h>
 #include "drivers/imu/imu.h"
+#include "drivers/hr/hr.h"
 
 #define HEART_DRAW_DELAY_US 400 * 1000
 #define HEART_ANIM_FRAMES_QTY 2
@@ -231,21 +232,51 @@ static void weather_screen(enum Screen_Event event) {
     draw_humidity(event);
 }
 
-static void heart_screen(enum Screen_Event event) {
+static void heart_screen(enum Screen_Event event, hr_sensor *hr) {
     if (event == ENTER) {
         display_clear();
 
         const char *screen_name = "Heart rate";
         gfx_draw_text(35, 0, screen_name, WHITE_COLOR, 2);
 
-        const char *heart_rate = "62";
+        gfx_draw_icon(90, 50, heart_icon, RED_COLOR, 2);
+        
+        const char *heart_rate = "--";
         gfx_draw_text(85, 140, heart_rate, WHITE_COLOR, 5);
     }
 
-    gfx_animation(90, 50, 65, 60, beating_heart, HEART_ANIM_FRAMES_QTY, HEART_DRAW_DELAY_US);
+    static bool is_measuring = false;
+    static uint32_t bpm = 0;
+    static uint32_t last_bpm = 0;
+
+    hr_read_bpm(hr, &is_measuring, &bpm);
+
+    if (is_measuring) {
+        gfx_animation(90, 50, 65, 60, beating_heart, HEART_ANIM_FRAMES_QTY, HEART_DRAW_DELAY_US);
+        
+        if (bpm != 0 && last_bpm != bpm) {
+            char bpm_buffer[5];
+            snprintf(bpm_buffer, sizeof(bpm_buffer), "%ld", bpm);
+            gfx_fill_rect(85, 140, 90, 35, BLACK_COLOR); // clear bpm
+            gfx_draw_text(85, 140, bpm_buffer, WHITE_COLOR, 5);
+        }
+    } else {
+        bpm = 0;
+        
+        if (last_bpm != bpm) {
+            gfx_draw_icon(90, 50, heart_icon, RED_COLOR, 2);
+            gfx_fill_rect(85, 140, 90, 35, BLACK_COLOR); // clear bpm
+
+            const char *heart_rate = "--";
+            gfx_draw_text(85, 140, heart_rate, WHITE_COLOR, 5);
+        }
+        
+    }
+
+    last_bpm = bpm;
 }
 
-void screen_manager(imu_sensor *imu) {
+void screen_manager(imu_sensor *imu, hr_sensor *hr) {
     enum Screen_Event event = UPDATE;
 
     if (screen_number != last_screen_number) {
@@ -267,7 +298,7 @@ void screen_manager(imu_sensor *imu) {
         break;
 
     case HEART:
-        heart_screen(event);
+        heart_screen(event, hr);
         break;
 
     case TOTAL_COUNT:

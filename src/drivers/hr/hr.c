@@ -237,7 +237,7 @@ static uint8_t hr_interval_to_bpm(uint32_t *interval_time) {
     return 60 * 1000 * 1000 / *interval_time;
 }
 
-esp_err_t hr_read_bpm(hr_sensor *hr) {
+esp_err_t hr_read_bpm(hr_sensor *hr, bool *is_measuring, uint32_t *bpm) {
     static uint32_t touch_detected_time = 0;
     static bool rising_state = false;
     static uint32_t last_beat_time = 0;
@@ -257,6 +257,8 @@ esp_err_t hr_read_bpm(hr_sensor *hr) {
 
     if (is_available) {
         if (raw > DETECTION_THRESHOLD) {
+            *is_measuring = true;
+
             if (touch_detected_time == 0) {
                 touch_detected_time = now;
             }
@@ -294,15 +296,17 @@ esp_err_t hr_read_bpm(hr_sensor *hr) {
                         }
 
                         uint32_t avg_interval_time = interval_sums / intervals_qty;
-                        uint32_t bpm = hr_interval_to_bpm(&avg_interval_time);
+                        *bpm = hr_interval_to_bpm(&avg_interval_time);
 
-                        ESP_LOGI(TAG, "BPM: %ld | intervals: %d", bpm, intervals_qty);
+                        ESP_LOGI(TAG, "BPM: %ld | intervals: %d", *bpm, intervals_qty);
                     }
 
                     last_bpm_record = now;
                 }
             }
         } else {
+            *is_measuring = false;
+
             touch_detected_time = 0;
             buffer_index = 0;
             last_beat_time = 0;
