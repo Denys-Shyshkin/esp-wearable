@@ -30,14 +30,14 @@
 #define PULSE_AMPLITUDE_1_VALUE 0x10
 #define PULSE_AMPLITUDE_1_ADDR 0x0C
 
-#define HR_WARMUP_SAMPLES 300 // ~3s at 100Hz, raw signal settle after init
-#define HR_ALPHA 0.02f        // smoothing factor
-#define BEAT_THRESHOLD_UPPER 100
-#define BEAT_THRESHOLD_LOWER -150
-#define BPM_THRESHOLD_UPPER 180
-#define BPM_THRESHOLD_LOWER 40
-#define DETECTION_THRESHOLD 8000
-#define BMP_AVERAGE_TIME 15 * 1000 * 1000
+#define HR_ALPHA 0.02f // smoothing factor
+#define BEAT_THRESHOLD_UPPER 50
+#define BEAT_THRESHOLD_LOWER -50
+#define DETECTION_THRESHOLD 9500
+#define BMP_AVERAGE_TIME 5 * 1000 * 1000
+#define SIGNAL_CALMING_DELAY 1 * 1000 * 1000
+#define SMA_WINDOW_SIZE 8
+#define INTERVAL_WINDOW_SIZE 20
 
 static const char *TAG = "HR";
 
@@ -196,7 +196,28 @@ esp_err_t hr_read_raw(hr_sensor *hr, bool *is_available, uint32_t *raw) {
     return ESP_OK;
 }
 
-static float hr_filter_raw_data(uint32_t *raw) {
+static uint32_t hr_smooth_data(uint32_t *raw) {
+    static uint32_t sample_buffer[SMA_WINDOW_SIZE];
+    static uint8_t buffer_index = 0;
+    static uint8_t samples_filled = 0;
+    static uint32_t running_sum = 0;
+
+    uint32_t sample = *raw;
+
+    running_sum -= sample_buffer[buffer_index];
+    sample_buffer[buffer_index] = sample;
+    running_sum += sample;
+
+    buffer_index = (buffer_index + 1) % SMA_WINDOW_SIZE;
+
+    if (samples_filled < SMA_WINDOW_SIZE) {
+        samples_filled++;
+    }
+
+    return running_sum / samples_filled;
+}
+
+static int64_t hr_filter_data(uint32_t *raw) {
     static float dc_estimate;
     static bool is_first_read = true;
 
@@ -217,16 +238,17 @@ static uint8_t hr_interval_to_bpm(uint32_t *interval_time) {
 }
 
 esp_err_t hr_read_bpm(hr_sensor *hr) {
-    bool is_available;
-    uint32_t raw;
-    uint32_t now = esp_timer_get_time();
-
+    static uint32_t touch_detected_time = 0;
     static bool rising_state = false;
-    static uint32_t beat_interval_qty = 0;
     static uint32_t last_beat_time = 0;
     static uint32_t last_bpm_record = 0;
-    static uint32_t interval_sums = 0;
-    static uint32_t warmup_samples_left = HR_WARMUP_SAMPLES;
+    static bool buffer_full = false;
+    static uint32_t interval_buffer[INTERVAL_WINDOW_SIZE] = {0};
+    static uint8_t buffer_index = 0;
+
+    uint32_t now = esp_timer_get_time();
+    bool is_available;
+    uint32_t raw;
 
     esp_err_t raw_error = hr_read_raw(hr, &is_available, &raw);
     if (raw_error != ESP_OK) {
@@ -235,45 +257,60 @@ esp_err_t hr_read_bpm(hr_sensor *hr) {
 
     if (is_available) {
         if (raw > DETECTION_THRESHOLD) {
-            if (warmup_samples_left > 0) {
-                warmup_samples_left--;
-                return ESP_OK;
+            if (touch_detected_time == 0) {
+                touch_detected_time = now;
             }
+            uint32_t smooth = hr_smooth_data(&raw);
+            int64_t filtered = hr_filter_data(&smooth);
 
-            float filtered_signal = hr_filter_raw_data(&raw);
+            if (now - touch_detected_time >= SIGNAL_CALMING_DELAY) {
+                if (rising_state && filtered > BEAT_THRESHOLD_UPPER) {
+                    rising_state = false;
 
-            if (rising_state && filtered_signal > BEAT_THRESHOLD_UPPER) {
-                rising_state = false;
+                    if (last_beat_time != 0) {
+                        interval_buffer[buffer_index] = now - last_beat_time;
 
-                if (last_beat_time != 0) {
-                    uint32_t interval = now - last_beat_time;
-                    uint32_t bpm = hr_interval_to_bpm(&interval);
+                        buffer_index++;
 
-                    if (bpm >= BPM_THRESHOLD_LOWER && bpm <= BPM_THRESHOLD_UPPER) {
-                        beat_interval_qty++;
-                        interval_sums += interval;
+                        if (buffer_index >= INTERVAL_WINDOW_SIZE) {
+                            buffer_index = 0;
+                            buffer_full = true;
+                        }
                     }
+
+                    last_beat_time = now;
+                } else if (!rising_state && filtered < BEAT_THRESHOLD_LOWER) {
+                    rising_state = true;
                 }
 
-                last_beat_time = now;
-            } else if (!rising_state && filtered_signal < BEAT_THRESHOLD_LOWER) {
-                rising_state = true;
-            }
+                if (now - last_bpm_record >= BMP_AVERAGE_TIME) {
+                    uint8_t intervals_qty = buffer_full ? INTERVAL_WINDOW_SIZE : (buffer_index > 1 ? buffer_index - 1 : 0);
 
-            if (now - last_bpm_record >= BMP_AVERAGE_TIME) {
-                if (beat_interval_qty > 0) {
-                    uint32_t avg_interval_time = interval_sums / beat_interval_qty;
-                    uint32_t bpm = hr_interval_to_bpm(&avg_interval_time);
+                    if (intervals_qty > 0) {
+                        uint32_t interval_sums = 0;
 
-                    ESP_LOGI(TAG, "BPM: %ld | Beat interval qty: %ld", bpm, beat_interval_qty);
+                        for (int i = 0; i < intervals_qty; i++) {
+                            interval_sums += interval_buffer[i];
+                        }
+
+                        uint32_t avg_interval_time = interval_sums / intervals_qty;
+                        uint32_t bpm = hr_interval_to_bpm(&avg_interval_time);
+
+                        ESP_LOGI(TAG, "BPM: %ld | intervals: %d", bpm, intervals_qty);
+                    }
+
+                    last_bpm_record = now;
                 }
-
-                last_bpm_record = now;
-                interval_sums = 0;
-                beat_interval_qty = 0;
             }
         } else {
-            warmup_samples_left = HR_WARMUP_SAMPLES;
+            touch_detected_time = 0;
+            buffer_index = 0;
+            last_beat_time = 0;
+            buffer_full = false;
+
+            for (int i = 0; i < INTERVAL_WINDOW_SIZE; i++) {
+                interval_buffer[i] = 0;
+            }
         }
     }
 
