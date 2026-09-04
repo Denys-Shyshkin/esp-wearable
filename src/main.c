@@ -152,6 +152,8 @@ void app_main() {
     esp_sleep_enable_gpio_wakeup();
     gpio_wakeup_enable(BUTTON_UP, GPIO_INTR_LOW_LEVEL);
     gpio_wakeup_enable(BUTTON_DOWN, GPIO_INTR_LOW_LEVEL);
+    esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(1ULL << BUTTON_UP, ESP_GPIO_WAKEUP_GPIO_LOW);
+    esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(1ULL << BUTTON_DOWN, ESP_GPIO_WAKEUP_GPIO_LOW);
 
     while (1) {
         weather_update();
@@ -159,6 +161,8 @@ void app_main() {
         buttons_reading();
         screen_change();
         screen_manager(&imu, &hr);
+
+        // esp_deep_sleep_start();
 
         vTaskDelay(pdMS_TO_TICKS(SUPERLOOP_DELAY));
     }
