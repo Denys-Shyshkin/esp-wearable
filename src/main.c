@@ -5,6 +5,7 @@
 #include "drivers/i2c/i2c.h"
 #include "drivers/imu/imu.h"
 #include "drivers/wifi/wifi.h"
+#include "esp_sleep.h"
 #include "esp_timer.h"
 #include "services/graphics/font_8x8.h"
 #include "services/graphics/graphics.h"
@@ -16,9 +17,6 @@
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-
-#define BUTTON_UP GPIO_NUM_7
-#define BUTTON_DOWN GPIO_NUM_8
 
 #define INIT_STATUSES_QTY 2
 #define WEATHER_UPDATE_DELAY_US 30 * 60 * 1000 * 1000 // 30 mins
@@ -56,21 +54,13 @@ static void screen_change() {
     if (btn_up.is_btn_pressed) {
         btn_up.is_btn_pressed = 0;
 
-        if (screen_number >= MAX_SCREENS_QTY) {
-            screen_number = 1;
-        } else {
-            screen_number++;
-        }
+        go_screen_up();
     }
 
     if (btn_down.is_btn_pressed) {
         btn_down.is_btn_pressed = 0;
 
-        if (screen_number <= 1) {
-            screen_number = MAX_SCREENS_QTY;
-        } else {
-            screen_number--;
-        }
+        go_screen_down();
     }
 }
 
@@ -158,6 +148,10 @@ void app_main() {
 
     button_init(&btn_up, BUTTON_UP);
     button_init(&btn_down, BUTTON_DOWN);
+
+    esp_sleep_enable_gpio_wakeup();
+    gpio_wakeup_enable(BUTTON_UP, GPIO_INTR_LOW_LEVEL);
+    gpio_wakeup_enable(BUTTON_DOWN, GPIO_INTR_LOW_LEVEL);
 
     while (1) {
         weather_update();

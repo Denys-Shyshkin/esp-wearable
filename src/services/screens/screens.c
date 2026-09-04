@@ -1,5 +1,9 @@
 #include "screens.h"
+#include "drivers/button/button.h"
 #include "drivers/display/display.h"
+#include "drivers/hr/hr.h"
+#include "drivers/imu/imu.h"
+#include "esp_sleep.h"
 #include "services/graphics/font_8x8.h"
 #include "services/graphics/graphics.h"
 #include "services/graphics/icons.h"
@@ -9,11 +13,11 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <time.h>
-#include "drivers/imu/imu.h"
-#include "drivers/hr/hr.h"
 
 #define HEART_DRAW_DELAY_US 400 * 1000
 #define HEART_ANIM_FRAMES_QTY 2
+
+#define TIME_SCREEN_SLEEP_TIMEOUT_US 1 * 1000 * 1000
 
 static const char *TAG = "SCREENS";
 
@@ -38,6 +42,22 @@ static uint8_t get_steps_count_position(uint32_t steps) {
         return 105;
     else
         return 115;
+}
+
+void go_screen_up() {
+    if (screen_number >= MAX_SCREENS_QTY) {
+        screen_number = 1;
+    } else {
+        screen_number++;
+    }
+}
+
+void go_screen_down() {
+    if (screen_number <= 1) {
+        screen_number = MAX_SCREENS_QTY;
+    } else {
+        screen_number--;
+    }
 }
 
 void startup_screen(enum Screen_Event event) {
@@ -114,6 +134,23 @@ static void draw_steps_count(enum Screen_Event event, imu_sensor *imu) {
     }
 }
 
+static void screen_light_sleep(uint64_t sleep_time) {
+    esp_sleep_enable_timer_wakeup(TIME_SCREEN_SLEEP_TIMEOUT_US);
+    esp_light_sleep_start();
+
+    uint32_t wakeup_causes = esp_sleep_get_wakeup_causes();
+
+    if (wakeup_causes & (1UL << ESP_SLEEP_WAKEUP_GPIO)) {
+        if (gpio_get_level(BUTTON_UP) == 0) {
+            go_screen_up();
+        }
+
+        if (gpio_get_level(BUTTON_DOWN) == 0) {
+            go_screen_down();
+        }
+    }
+}
+
 static void time_screen(enum Screen_Event event, imu_sensor *imu) {
     struct tm timeinfo;
     get_time(&timeinfo);
@@ -133,6 +170,8 @@ static void time_screen(enum Screen_Event event, imu_sensor *imu) {
     draw_date(event, &timeinfo);
 
     draw_steps_count(event, imu);
+
+    screen_light_sleep(TIME_SCREEN_SLEEP_TIMEOUT_US);
 }
 
 static void draw_weather_icon(enum Screen_Event event) {
@@ -240,7 +279,7 @@ static void heart_screen(enum Screen_Event event, hr_sensor *hr) {
         gfx_draw_text(35, 0, screen_name, WHITE_COLOR, 2);
 
         gfx_draw_icon(90, 50, heart_icon, RED_COLOR, 2);
-        
+
         const char *heart_rate = "--";
         gfx_draw_text(85, 140, heart_rate, WHITE_COLOR, 5);
     }
@@ -253,7 +292,7 @@ static void heart_screen(enum Screen_Event event, hr_sensor *hr) {
 
     if (is_measuring) {
         gfx_animation(90, 50, 65, 60, beating_heart, HEART_ANIM_FRAMES_QTY, HEART_DRAW_DELAY_US);
-        
+
         if (bpm != 0 && last_bpm != bpm) {
             char bpm_buffer[5];
             snprintf(bpm_buffer, sizeof(bpm_buffer), "%ld", bpm);
@@ -262,7 +301,7 @@ static void heart_screen(enum Screen_Event event, hr_sensor *hr) {
         }
     } else {
         bpm = 0;
-        
+
         if (last_bpm != bpm) {
             gfx_draw_icon(90, 50, heart_icon, RED_COLOR, 2);
             gfx_fill_rect(85, 140, 90, 35, BLACK_COLOR); // clear bpm
@@ -270,7 +309,6 @@ static void heart_screen(enum Screen_Event event, hr_sensor *hr) {
             const char *heart_rate = "--";
             gfx_draw_text(85, 140, heart_rate, WHITE_COLOR, 5);
         }
-        
     }
 
     last_bpm = bpm;

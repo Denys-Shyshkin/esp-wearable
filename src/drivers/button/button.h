@@ -2,6 +2,9 @@
 
 #include "driver/gpio.h"
 
+#define BUTTON_UP GPIO_NUM_7
+#define BUTTON_DOWN GPIO_NUM_8
+
 typedef struct {
     gpio_num_t gpio;
     bool btn_state;
