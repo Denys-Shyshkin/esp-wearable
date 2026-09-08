@@ -58,47 +58,59 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 
 ## System Architecture
 
-<img src="./img/diagrams/software_architecture.png" alt="System Architecture" width="800">
+<img src="./img/diagrams/software_architecture.png" alt="System Architecture" width="800"></img>
+
+*Created using [draw.io](https://www.drawio.com/)*
 
 ## Wiring
 
-<img src="./img/diagrams/wiring.png" alt="Wiring" width="800">
+<img src="./img/diagrams/wiring.png" alt="Wiring" width="800"></img>
+
+*Created using [Cirkit Designer](https://app.cirkitdesigner.com/)*
 
 ## Schematic
 
-<img src="./img/diagrams/schematic.png" alt="Schematic" width="800">
+<img src="./img/diagrams/schematic.png" alt="Schematic" width="800"></img>
+
+*Created using [KiCad](https://www.kicad.org/)*
 
 ## PCB layout
 
-*This section is currently under construction and will be updated soon*
+*This section will be updated soon...*
 
 ## Case
 
-*This section is currently under construction and will be updated soon*
+*This section will be updated soon...*
 
 ## Build Instructions
 
-*This section is currently under construction and will be updated soon*
+*This section will be updated soon...*
 
 ## CPU Usage
 
-*This section is currently under construction and will be updated soon*
+*This section will be updated soon...*
 
 ## Memory Usage
 
-*This section is currently under construction and will be updated soon*
+*This section will be updated soon...*
 
 ## Timing
 
-*This section is currently under construction and will be updated soon*
+*This section will be updated soon...*
 
 ## Battery consumption
 
-*This section is currently under construction and will be updated soon*
+*This section will be updated soon...*
 
 ## Challenges
 
-*This section is currently under construction and will be updated soon*
+1. MCU constant reboot on Wi-Fi connection \
+  **Cause**: MCU Wi-Fi module draws brief, sharp current spikes up to 500 mA and it causes a voltage drop below the minimum operating threshold \
+  **Solution**: Capacitors decoupling pairing ceramic 100 nF for high frequencies switching noise and electrolytic 220 uF bulk reservoir
+
+2. Reboot after 20-30 seconds of operation \
+  **Cause**: Long wires introduce wire resistance and parasitic inductance that causes a voltage drop during normal operation triggering the brownout reset. \
+  **Solution**: Shorter wires
 
 ## Future Improvements
 
