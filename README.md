@@ -18,6 +18,7 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 - C
 
 ## Hardware
+### Main Module
 
 | # | Image | Name / Model | Qty | Description |
 | --- | --- | --- | --- | --- |
@@ -25,26 +26,33 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 | 2 | <img src="./img/pictures/ST7789.png" alt="ST7789" width="150"> | ST7789 LCD TFT  | 1 | 240x240 display |
 | 3 | <img src="./img/pictures/QMI8658A.png" alt="QMI8658A" width="150"> | QMI8658A | 1 | 6-axis inertial measurement unit  |
 | 4 | <img src="./img/pictures/MAX30102.png" alt="MAX30102" width="150"> | MAX30102 | 1 | heart rate sensor |
-| 5 | <img src="./img/pictures/LiPo.png" alt="LiPo" width="150"> | GEB403035 | 1 | LiPo 400 mAh (3.7 V) power supply |
-| 6 | <img src="./img/pictures/S7V8F3.png" alt="S7V8F3" width="150"> | S7V8F3 | 1 | buck-boost 3.3 V converter |
-| 7 | <img src="./img/pictures/TP4057.png" alt="TP4057" width="150"> | TP4057 module* | 1 | charge controller |
-|  |  | Push button | 2 | user input |
-|  |  | Capacitor 0.1 uF | 1 | power supply filter |
-|  |  | Capacitor 10 uF | 1 | power supply filter |
-|  |  | Resistor 4.7 kOhm | 2 | I2C lines pull-ups |
-|  |  | Resistor 3.3 kOhm | 1 | to create voltage divider |
-|  |  | Resistor 6.8 kOhm | 1 | to create voltage divider |
+| 5 | --- | Push button | 2 | user input |
+| 6 | --- | Capacitor 0.1 uF | 1 | power supply filter |
+| 7 | --- | Capacitor 220 uF | 1 | power supply filter |
+| 8 | --- | Resistor 4.7 kOhm | 4 | I2C lines pull-ups |
 
-\* *battery charge controller TP4057 is used in a module form for prototyping, but IC is used for PCB assembly. 
-This is the list of parts to assemble a separate charge module based on TP4057 IC:*
+### Power Supply
+
+| # | Image | Name / Model | Qty | Description |
+| --- | --- | --- | --- | --- |
+| 1 | <img src="./img/pictures/LiPo.png" alt="LiPo" width="150"> | GEB403035 | 1 | LiPo 400 mAh (3.7 V) power supply |
+| 2 | <img src="./img/pictures/S7V8F3.png" alt="S7V8F3" width="150"> | S7V8F3 | 1 | buck-boost 3.3 V converter |
+| 3 | --- | AO3401A | 1 | p-channel MOSFET |
+| 4 | --- | Resistor 10 kOhm | 1 | gate pull-down resistor |
+| 5 | --- | Resistor 3.3 kOhm | 1 | for voltage divider |
+| 6 | --- | Resistor 6.8 kOhm | 1 | for voltage divider |
+
+
+### Battery Charge Regulator
 
 | # | Name / Model | Qty |
 | --- | --- | --- |
 | 1 | Integrated circuit TP4057 | 1 |
 | 2 | Resistor 330 Ohm | 1 |
 | 3 | Resistor 2 kOhm | 1 |
-| 4 | LED green | 1 |
-| 5 | LED red | 1 |
+| 3 | Resistor 4.7 kOhm | 1 |
+| 3 | Resistor 6.8 kOhm | 1 |
+| 4 | LED blue | 1 |
 | 6 | Capacitor 1 uF | 1 |
 | 7 | Capacitor 10 uF | 1 |
 
@@ -71,6 +79,10 @@ This is the list of parts to assemble a separate charge module based on TP4057 I
 ## Build Instructions
 
 *step by step guide*
+
+## CPU Usage
+
+*optional*
 
 ## Memory Usage
 
