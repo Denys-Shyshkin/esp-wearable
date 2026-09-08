@@ -62,11 +62,11 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 
 ## Wiring
 
-*This section is currently under construction and will be updated soon*
+<img src="./img/diagrams/wiring.png" alt="Wiring" width="800">
 
 ## Schematic
 
-*This section is currently under construction and will be updated soon*
+<img src="./img/diagrams/schematic.png" alt="Schematic" width="800">
 
 ## PCB layout
 
