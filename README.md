@@ -62,43 +62,43 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 
 ## Wiring
 
-*diagram*
+*This section is currently under construction and will be updated soon*
 
 ## Schematic
 
-*diagram*
+*This section is currently under construction and will be updated soon*
 
 ## PCB layout
 
-*diagram*
+*This section is currently under construction and will be updated soon*
 
 ## Case
 
-*scheme*
+*This section is currently under construction and will be updated soon*
 
 ## Build Instructions
 
-*step by step guide*
+*This section is currently under construction and will be updated soon*
 
 ## CPU Usage
 
-*optional*
+*This section is currently under construction and will be updated soon*
 
 ## Memory Usage
 
-*optional*
+*This section is currently under construction and will be updated soon*
 
 ## Timing
 
-*optional*
+*This section is currently under construction and will be updated soon*
 
 ## Battery consumption
 
-*table*
+*This section is currently under construction and will be updated soon*
 
 ## Challenges
 
-*problem -> cause -> solution*
+*This section is currently under construction and will be updated soon*
 
 ## Future Improvements
 
@@ -107,5 +107,4 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 
 ## Screenshots / Photos
 
-*logic analyzer and/or oscilloscope captures*,
-*hardware photos*
+*This section is currently under construction and will be updated soon*
