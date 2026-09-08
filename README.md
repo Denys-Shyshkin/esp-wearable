@@ -116,6 +116,8 @@ An ESP32-C3-based wearable smartwatch designed to apply core embedded systems co
 
 - Settings screen (adjust brightness, region select for weather forecast etc.)
 - Bluetooth support
+- Night Mode
+- Deep Sleep
 
 ## Screenshots / Photos
 
