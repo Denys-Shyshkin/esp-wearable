@@ -2,6 +2,7 @@
 #include "driver/i2c_master.h"
 #include "drivers/i2c/i2c.h"
 #include "esp_timer.h"
+#include "utils/utils.h"
 #include <esp_log.h>
 
 #define I2C_ADDR 0x57
@@ -165,7 +166,7 @@ esp_err_t hr_init(i2c_master_bus_handle_t *bus, hr_sensor *hr) {
     return ESP_OK;
 }
 
-esp_err_t hr_read_raw(hr_sensor *hr, bool *is_available, uint32_t *raw) {
+esp_err_t hr_read_raw(hr_sensor *hr, bool *is_available, int *raw) {
     *is_available = false;
 
     uint8_t wr_ptr;
@@ -194,27 +195,6 @@ esp_err_t hr_read_raw(hr_sensor *hr, bool *is_available, uint32_t *raw) {
     *is_available = true;
 
     return ESP_OK;
-}
-
-static uint32_t hr_smooth_data(uint32_t *raw) {
-    static uint32_t sample_buffer[SMA_WINDOW_SIZE];
-    static uint8_t buffer_index = 0;
-    static uint8_t samples_filled = 0;
-    static uint32_t running_sum = 0;
-
-    uint32_t sample = *raw;
-
-    running_sum -= sample_buffer[buffer_index];
-    sample_buffer[buffer_index] = sample;
-    running_sum += sample;
-
-    buffer_index = (buffer_index + 1) % SMA_WINDOW_SIZE;
-
-    if (samples_filled < SMA_WINDOW_SIZE) {
-        samples_filled++;
-    }
-
-    return running_sum / samples_filled;
 }
 
 static int64_t hr_filter_data(uint32_t *raw) {
@@ -248,7 +228,7 @@ esp_err_t hr_read_bpm(hr_sensor *hr, bool *is_measuring, uint32_t *bpm) {
 
     uint32_t now = esp_timer_get_time();
     bool is_available;
-    uint32_t raw;
+    int raw;
 
     esp_err_t raw_error = hr_read_raw(hr, &is_available, &raw);
     if (raw_error != ESP_OK) {
@@ -262,7 +242,7 @@ esp_err_t hr_read_bpm(hr_sensor *hr, bool *is_measuring, uint32_t *bpm) {
             if (touch_detected_time == 0) {
                 touch_detected_time = now;
             }
-            uint32_t smooth = hr_smooth_data(&raw);
+            uint32_t smooth = utils_moving_average(&raw, SMA_WINDOW_SIZE);
             int64_t filtered = hr_filter_data(&smooth);
 
             if (now - touch_detected_time >= SIGNAL_CALMING_DELAY) {

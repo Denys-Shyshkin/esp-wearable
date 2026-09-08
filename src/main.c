@@ -1,4 +1,5 @@
 #include "driver/i2c_master.h"
+#include "drivers/adc/adc.h"
 #include "drivers/button/button.h"
 #include "drivers/display/display.h"
 #include "drivers/hr/hr.h"
@@ -43,7 +44,6 @@ init_status init_statuses[INIT_STATUSES_QTY] = {fail_status, ok_status};
 i2c_master_bus_handle_t i2c_bus_0;
 imu_sensor imu;
 hr_sensor hr;
-imu_raw_data imu_raw;
 
 static void buttons_reading() {
     button_is_pressed(&btn_up);
@@ -143,6 +143,7 @@ static void functionality_setup() {
 void app_main() {
     display_init();
     i2c_bus_init(&i2c_bus_0);
+    adc_init();
 
     functionality_setup();
 
