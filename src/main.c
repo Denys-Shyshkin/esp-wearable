@@ -141,6 +141,17 @@ static void functionality_setup() {
     gfx_draw_text(170, 160, init_statuses[is_hr_sensor_init].text, init_statuses[is_hr_sensor_init].color, 1);
 }
 
+static void bat_charge_gpio_init() {
+    gpio_config_t io_config = {
+        .pin_bit_mask = 1ULL << PIN_CHARGE,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_ENABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    ESP_ERROR_CHECK(gpio_config(&io_config));
+}
+
 void app_main() {
     display_init();
     i2c_bus_init(&i2c_bus_0);
@@ -150,6 +161,8 @@ void app_main() {
 
     button_init(&btn_up, PIN_BUTTON_UP);
     button_init(&btn_down, PIN_BUTTON_DOWN);
+
+    bat_charge_gpio_init();
 
     esp_sleep_enable_gpio_wakeup();
     gpio_wakeup_enable(PIN_BUTTON_UP, GPIO_INTR_LOW_LEVEL);

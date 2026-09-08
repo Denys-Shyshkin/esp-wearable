@@ -1,6 +1,7 @@
 #pragma once
 
 #define PIN_BAT GPIO_NUM_2
+#define PIN_CHARGE GPIO_NUM_3
 
 #define PIN_BUTTON_UP GPIO_NUM_1
 #define PIN_BUTTON_DOWN GPIO_NUM_0

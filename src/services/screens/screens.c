@@ -26,7 +26,8 @@
 #define MIN_BAT_VOLTAGE 3.0
 #define MAX_BAR_RAW_VALUE 4096
 
-// #define DEBUG
+// #define SHOW_BAT_VOLTAGE
+#define SLEEP_MODE_ON
 
 static const char *TAG = "SCREENS";
 
@@ -78,14 +79,13 @@ void startup_screen(enum Screen_Event event) {
     }
 }
 
-bool is_charging = true;
-
 static void draw_bat_percentage(enum Screen_Event event) {
     static uint8_t displayed_percentage;
     static uint64_t last_update = 0;
 
     static bool charging_state_displayed = false;
 
+    bool is_charging = gpio_get_level(PIN_CHARGE) == 1;
     int filtered = 0;
     adc_read_filtered(PIN_BAT, &filtered);
     float voltage = (float)filtered * (MAX_BAT_VOLTAGE / MAX_BAR_RAW_VALUE);
@@ -107,7 +107,7 @@ static void draw_bat_percentage(enum Screen_Event event) {
         snprintf(percentage_buffer, sizeof(percentage_buffer), "%d%%", percentage);
         gfx_draw_text(98, 10, percentage_buffer, WHITE_COLOR, 2);
 
-#ifdef DEBUG
+#ifdef SHOW_BAT_VOLTAGE
         gfx_fill_rect(98, 25, 70, 15, BLACK_COLOR);
         char voltage_buffer[10];
         snprintf(voltage_buffer, sizeof(voltage_buffer), "%.2f", voltage);
@@ -147,7 +147,7 @@ static void draw_hours_minutes(enum Screen_Event event, struct tm *timeinfo) {
     static uint8_t displayed_hours;
 
     if (displayed_minutes != timeinfo->tm_min || event == ENTER) {
-        gfx_fill_rect(135, 90, 100, 50, BLACK_COLOR); // clear mins
+        gfx_fill_rect(135, 90, 105, 50, BLACK_COLOR); // clear mins
         char mins_buff[6];
         strftime(mins_buff, sizeof(mins_buff), "%M", timeinfo);
         gfx_draw_text(135, 90, mins_buff, WHITE_COLOR, 7);
@@ -195,6 +195,7 @@ static void draw_steps_count(enum Screen_Event event, imu_sensor *imu) {
 }
 
 static void screen_light_sleep(uint64_t sleep_time) {
+#ifdef SLEEP_MODE_ON
     esp_sleep_enable_timer_wakeup(TIME_SCREEN_SLEEP_TIMEOUT_US);
     esp_light_sleep_start();
 
@@ -209,6 +210,7 @@ static void screen_light_sleep(uint64_t sleep_time) {
             go_screen_down();
         }
     }
+#endif
 }
 
 static void time_screen(enum Screen_Event event, imu_sensor *imu) {
