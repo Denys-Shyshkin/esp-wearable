@@ -1,4 +1,5 @@
 #include "screens.h"
+#include "config/config.h"
 #include "drivers/adc/adc.h"
 #include "drivers/button/button.h"
 #include "drivers/display/display.h"
@@ -77,23 +78,24 @@ void startup_screen(enum Screen_Event event) {
     }
 }
 
+bool is_charging = true;
+
 static void draw_bat_percentage(enum Screen_Event event) {
     static uint8_t displayed_percentage;
     static uint64_t last_update = 0;
 
-    static bool is_charging = true;
     static bool charging_state_displayed = false;
 
     int filtered = 0;
-    adc_read_filtered(BAT, &filtered);
+    adc_read_filtered(PIN_BAT, &filtered);
     float voltage = (float)filtered * (MAX_BAT_VOLTAGE / MAX_BAR_RAW_VALUE);
     uint8_t percentage = ((voltage - MIN_BAT_VOLTAGE) / (MAX_BAT_VOLTAGE - MIN_BAT_VOLTAGE)) * 100;
-    
+
     if (percentage > 95) {
         percentage = 100;
     } else if (percentage < 5) {
         percentage = 5;
-    } else if (percentage <= 95 || percentage >= 5 ) {
+    } else if (percentage <= 95 || percentage >= 5) {
         percentage = (percentage / 5) * 5;
     }
 
@@ -105,18 +107,18 @@ static void draw_bat_percentage(enum Screen_Event event) {
         snprintf(percentage_buffer, sizeof(percentage_buffer), "%d%%", percentage);
         gfx_draw_text(98, 10, percentage_buffer, WHITE_COLOR, 2);
 
-        #ifdef DEBUG
+#ifdef DEBUG
         gfx_fill_rect(98, 25, 70, 15, BLACK_COLOR);
         char voltage_buffer[10];
         snprintf(voltage_buffer, sizeof(voltage_buffer), "%.2f", voltage);
         gfx_draw_text(98, 25, voltage_buffer, WHITE_COLOR, 2);
-        #endif
+#endif
 
         displayed_percentage = percentage;
         last_update = now;
     }
 
-    if (charging_state_displayed != is_charging) {
+    if (charging_state_displayed != is_charging || event == ENTER) {
         if (is_charging) {
             gfx_draw_icon(60, 0, charging, GREEN_COLOR, 1);
         } else {
@@ -145,10 +147,10 @@ static void draw_hours_minutes(enum Screen_Event event, struct tm *timeinfo) {
     static uint8_t displayed_hours;
 
     if (displayed_minutes != timeinfo->tm_min || event == ENTER) {
-        gfx_fill_rect(140, 90, 100, 50, BLACK_COLOR); // clear mins
+        gfx_fill_rect(135, 90, 100, 50, BLACK_COLOR); // clear mins
         char mins_buff[6];
         strftime(mins_buff, sizeof(mins_buff), "%M", timeinfo);
-        gfx_draw_text(140, 90, mins_buff, WHITE_COLOR, 7);
+        gfx_draw_text(135, 90, mins_buff, WHITE_COLOR, 7);
 
         displayed_minutes = timeinfo->tm_min;
     }
@@ -199,11 +201,11 @@ static void screen_light_sleep(uint64_t sleep_time) {
     uint32_t wakeup_causes = esp_sleep_get_wakeup_causes();
 
     if (wakeup_causes & (1UL << ESP_SLEEP_WAKEUP_GPIO)) {
-        if (gpio_get_level(BUTTON_UP) == 0) {
+        if (gpio_get_level(PIN_BUTTON_UP) == 0) {
             go_screen_up();
         }
 
-        if (gpio_get_level(BUTTON_DOWN) == 0) {
+        if (gpio_get_level(PIN_BUTTON_DOWN) == 0) {
             go_screen_down();
         }
     }

@@ -1,4 +1,5 @@
 #include "adc.h"
+#include "config/config.h"
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
 #include "utils/utils.h"
@@ -18,7 +19,7 @@ void adc_init() {
         .bitwidth = ADC_BITWIDTH_12,
     };
 
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, BAT, &chan_cfg));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, PIN_BAT, &chan_cfg));
 }
 
 void adc_read_raw(adc_channel_t chan, int *raw) {

@@ -18,6 +18,7 @@
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include "config/config.h"
 
 #define INIT_STATUSES_QTY 2
 #define WEATHER_UPDATE_DELAY_US 30 * 60 * 1000 * 1000 // 30 mins
@@ -147,14 +148,14 @@ void app_main() {
 
     functionality_setup();
 
-    button_init(&btn_up, BUTTON_UP);
-    button_init(&btn_down, BUTTON_DOWN);
+    button_init(&btn_up, PIN_BUTTON_UP);
+    button_init(&btn_down, PIN_BUTTON_DOWN);
 
     esp_sleep_enable_gpio_wakeup();
-    gpio_wakeup_enable(BUTTON_UP, GPIO_INTR_LOW_LEVEL);
-    gpio_wakeup_enable(BUTTON_DOWN, GPIO_INTR_LOW_LEVEL);
-    esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(1ULL << BUTTON_UP, ESP_GPIO_WAKEUP_GPIO_LOW);
-    esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(1ULL << BUTTON_DOWN, ESP_GPIO_WAKEUP_GPIO_LOW);
+    gpio_wakeup_enable(PIN_BUTTON_UP, GPIO_INTR_LOW_LEVEL);
+    gpio_wakeup_enable(PIN_BUTTON_DOWN, GPIO_INTR_LOW_LEVEL);
+    esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(1ULL << PIN_BUTTON_UP, ESP_GPIO_WAKEUP_GPIO_LOW);
+    esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(1ULL << PIN_BUTTON_DOWN, ESP_GPIO_WAKEUP_GPIO_LOW);
 
     while (1) {
         weather_update();

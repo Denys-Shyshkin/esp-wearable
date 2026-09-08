@@ -1,17 +1,11 @@
 #include "display.h"
+#include "config/config.h"
 #include "driver/gpio.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_st7789.h"
 #include "esp_lcd_panel_vendor.h"
 #include <esp_log.h>
-
-#define PIN_NUM_SCLK 4
-#define PIN_NUM_MOSI 6
-#define PIN_NUM_DC 10
-#define PIN_NUM_CS 20
-#define PIN_NUM_BKL 21
-#define PIN_NUM_RST 9
 
 #define LCD_H_RES 240
 #define LCD_V_RES 240
@@ -59,15 +53,15 @@ void display_init() {
     ESP_LOGI(TAG, "Turn on LCD backlight");
     gpio_config_t bk_gpio_config = {
         .mode = GPIO_MODE_OUTPUT,
-        .pin_bit_mask = 1ULL << PIN_NUM_BKL,
+        .pin_bit_mask = 1ULL << PIN_BKL,
     };
     ESP_ERROR_CHECK(gpio_config(&bk_gpio_config));
-    ESP_ERROR_CHECK(gpio_set_level(PIN_NUM_BKL, 1));
+    ESP_ERROR_CHECK(gpio_set_level(PIN_BKL, 1));
 
     ESP_LOGI(TAG, "Initialize SPI bus");
     spi_bus_config_t buscfg = {
-        .sclk_io_num = PIN_NUM_SCLK,
-        .mosi_io_num = PIN_NUM_MOSI,
+        .sclk_io_num = PIN_SCLK,
+        .mosi_io_num = PIN_MOSI,
         .miso_io_num = -1,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
@@ -78,8 +72,8 @@ void display_init() {
     ESP_LOGI(TAG, "Allocate an LCD IO device handle from the SPI bus");
     esp_lcd_panel_io_handle_t io_handle = NULL;
     esp_lcd_panel_io_spi_config_t io_config = {
-        .dc_gpio_num = PIN_NUM_DC,
-        .cs_gpio_num = PIN_NUM_CS,
+        .dc_gpio_num = PIN_DC,
+        .cs_gpio_num = PIN_CS,
         .pclk_hz = LCD_PIXEL_CLOCK_HZ,
         .lcd_cmd_bits = LCD_CMD_BITS,
         .lcd_param_bits = LCD_PARAM_BITS,
@@ -90,7 +84,7 @@ void display_init() {
 
     ESP_LOGI(TAG, "Install the LCD controller driver");
     esp_lcd_panel_dev_config_t panel_config = {
-        .reset_gpio_num = PIN_NUM_RST,
+        .reset_gpio_num = PIN_RST,
         .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB,
         .data_endian = LCD_RGB_DATA_ENDIAN_LITTLE,
         .bits_per_pixel = 16,

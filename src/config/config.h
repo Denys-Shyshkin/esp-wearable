@@ -1,0 +1,16 @@
+#pragma once
+
+#define PIN_BAT GPIO_NUM_2
+
+#define PIN_BUTTON_UP GPIO_NUM_1
+#define PIN_BUTTON_DOWN GPIO_NUM_0
+
+#define PIN_SCLK GPIO_NUM_4
+#define PIN_MOSI GPIO_NUM_6
+#define PIN_DC GPIO_NUM_10
+#define PIN_CS GPIO_NUM_20
+#define PIN_BKL GPIO_NUM_21
+#define PIN_RST GPIO_NUM_9
+
+#define PIN_SDA GPIO_NUM_7
+#define PIN_SCL GPIO_NUM_8

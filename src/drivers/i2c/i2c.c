@@ -1,9 +1,7 @@
 #include "i2c.h"
+#include "config/config.h"
 #include "driver/i2c_master.h"
 #include <esp_log.h>
-
-#define PIN_SDA GPIO_NUM_7
-#define PIN_SCL GPIO_NUM_8
 
 #define I2C_TIMEOUT_MS 100
 
