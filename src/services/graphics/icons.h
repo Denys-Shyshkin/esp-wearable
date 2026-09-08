@@ -12,6 +12,8 @@ typedef struct {
     const uint32_t *bitmap;
 } weather_icon_map;
 
+extern const uint32_t charging[ICON_ROWS_QTY];
+
 extern const uint32_t loading[ICON_ROWS_QTY];
 extern const uint32_t loading_1[ICON_ROWS_QTY];
 extern const uint32_t loading_2[ICON_ROWS_QTY];

@@ -81,6 +81,9 @@ static void draw_bat_percentage(enum Screen_Event event) {
     static uint8_t displayed_percentage;
     static uint64_t last_update = 0;
 
+    static bool is_charging = true;
+    static bool charging_state_displayed = false;
+
     int filtered = 0;
     adc_read_filtered(BAT, &filtered);
     float voltage = (float)filtered * (MAX_BAT_VOLTAGE / MAX_BAR_RAW_VALUE);
@@ -97,20 +100,30 @@ static void draw_bat_percentage(enum Screen_Event event) {
     uint64_t now = esp_timer_get_time();
 
     if ((displayed_percentage != percentage && now - last_update >= BAT_PERCENTAGE_UPDATE_INTERVAL_US) || event == ENTER) {
-        gfx_fill_rect(98, 0, 70, 15, BLACK_COLOR); // clear percentage
+        gfx_fill_rect(98, 10, 70, 15, BLACK_COLOR); // clear percentage
         char percentage_buffer[10];
         snprintf(percentage_buffer, sizeof(percentage_buffer), "%d%%", percentage);
-        gfx_draw_text(98, 0, percentage_buffer, WHITE_COLOR, 2);
+        gfx_draw_text(98, 10, percentage_buffer, WHITE_COLOR, 2);
 
         #ifdef DEBUG
-        gfx_fill_rect(98, 15, 70, 15, BLACK_COLOR);
+        gfx_fill_rect(98, 25, 70, 15, BLACK_COLOR);
         char voltage_buffer[10];
         snprintf(voltage_buffer, sizeof(voltage_buffer), "%.2f", voltage);
-        gfx_draw_text(98, 15, voltage_buffer, WHITE_COLOR, 2);
+        gfx_draw_text(98, 25, voltage_buffer, WHITE_COLOR, 2);
         #endif
 
         displayed_percentage = percentage;
         last_update = now;
+    }
+
+    if (charging_state_displayed != is_charging) {
+        if (is_charging) {
+            gfx_draw_icon(60, 0, charging, GREEN_COLOR, 1);
+        } else {
+            gfx_fill_rect(60, 0, 30, 40, BLACK_COLOR);
+        }
+
+        charging_state_displayed = is_charging;
     }
 }
 

@@ -83,7 +83,7 @@ void gfx_draw_icon(int16_t x, int16_t y, const uint32_t *icon, uint16_t color, u
         uint32_t row_data = icon[row];
 
         for (uint8_t col = 0; col < ICON_COLS_QTY; col++) {
-            bool pixel_on = (row_data >> col) & 1;
+            bool pixel_on = (row_data >> ((ICON_COLS_QTY - 1) - col)) & 1;
 
             if (pixel_on) {
                 gfx_fill_rect(x + col * scale, y + row * scale, scale, scale, color);
