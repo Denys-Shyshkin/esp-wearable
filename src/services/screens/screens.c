@@ -101,7 +101,7 @@ static void draw_bat_percentage(enum Screen_Event event) {
 
     uint64_t now = esp_timer_get_time();
 
-    if ((displayed_percentage != percentage && now - last_update >= BAT_PERCENTAGE_UPDATE_INTERVAL_US) || event == ENTER) {
+    if ((((displayed_percentage > percentage && !is_charging) || (displayed_percentage < percentage && is_charging)) && now - last_update >= BAT_PERCENTAGE_UPDATE_INTERVAL_US) || event == ENTER) {
         gfx_fill_rect(98, 10, 70, 15, BLACK_COLOR); // clear percentage
         char percentage_buffer[10];
         snprintf(percentage_buffer, sizeof(percentage_buffer), "%d%%", percentage);
@@ -221,7 +221,7 @@ static void time_screen(enum Screen_Event event, imu_sensor *imu) {
         display_clear();
 
         const char *time_separator = ":";
-        gfx_draw_text(105, 95, time_separator, WHITE_COLOR, 5);
+        gfx_draw_text(103, 95, time_separator, WHITE_COLOR, 5);
     }
 
     draw_bat_percentage(event);
