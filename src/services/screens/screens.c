@@ -25,7 +25,7 @@
 #define MIN_BAT_VOLTAGE 3.0
 #define MAX_BAR_RAW_VALUE 4096
 
-#define DEBUG false
+// #define DEBUG
 
 static const char *TAG = "SCREENS";
 
