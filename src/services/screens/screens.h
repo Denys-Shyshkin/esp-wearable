@@ -1,7 +1,8 @@
 #pragma once
 
-#include "drivers/imu/imu.h"
 #include "drivers/hr/hr.h"
+#include "drivers/imu/imu.h"
+#include "drivers/button/button.h"
 #include <stdint.h>
 
 enum Screen_Event {
@@ -24,3 +25,4 @@ void go_screen_up();
 void go_screen_down();
 void startup_screen(enum Screen_Event event);
 void screen_manager(imu_sensor *imu, hr_sensor *hr);
+void screen_change(button *btn_up, button *btn_down);

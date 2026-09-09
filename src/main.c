@@ -1,3 +1,4 @@
+#include "config/config.h"
 #include "driver/i2c_master.h"
 #include "drivers/adc/adc.h"
 #include "drivers/button/button.h"
@@ -7,7 +8,6 @@
 #include "drivers/imu/imu.h"
 #include "drivers/wifi/wifi.h"
 #include "esp_sleep.h"
-#include "esp_timer.h"
 #include "services/graphics/font_8x8.h"
 #include "services/graphics/graphics.h"
 #include "services/graphics/icons.h"
@@ -18,19 +18,12 @@
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include "config/config.h"
 
 #define INIT_STATUSES_QTY 2
-#define WEATHER_UPDATE_DELAY_US 30 * 60 * 1000 * 1000 // 30 mins
 
 #define SUPERLOOP_DELAY 10
 
-static const char *TAG = "MAIN";
-
-#define DEFAULT_BUTTON (button){.gpio = -1, .btn_state = 1, .last_btn_state = 1, .s_last_btn_pressed = 0, .is_btn_pressed = 0}
-
-button btn_up = DEFAULT_BUTTON;
-button btn_down = DEFAULT_BUTTON;
+// static const char *TAG = "MAIN";
 
 typedef struct {
     const char *text;
@@ -46,73 +39,10 @@ i2c_master_bus_handle_t i2c_bus_0;
 imu_sensor imu;
 hr_sensor hr;
 
-static void buttons_reading() {
-    button_is_pressed(&btn_up);
-    button_is_pressed(&btn_down);
-}
+button btn_up = DEFAULT_BUTTON;
+button btn_down = DEFAULT_BUTTON;
 
-static void screen_change() {
-    if (btn_up.is_btn_pressed) {
-        btn_up.is_btn_pressed = 0;
-
-        go_screen_up();
-    }
-
-    if (btn_down.is_btn_pressed) {
-        btn_down.is_btn_pressed = 0;
-
-        go_screen_down();
-    }
-}
-
-static bool weather_update() {
-    uint32_t now = esp_timer_get_time();
-    static uint32_t last_weather_update = 0;
-
-    if (now - last_weather_update >= WEATHER_UPDATE_DELAY_US || last_weather_update == 0) {
-        last_weather_update = now;
-
-        uint8_t is_request_succeed = http_get(weather_url);
-        if (is_request_succeed) {
-            return parse_weather();
-        } else {
-            return 0;
-        }
-    } else {
-        return 0;
-    }
-}
-
-static bool pedometer_init(i2c_master_bus_handle_t *bus, imu_sensor *imu) {
-    esp_err_t imu_init_error = imu_init(&i2c_bus_0, imu);
-
-    if (imu_init_error != ESP_OK) {
-        ESP_LOGI(TAG, "IMU initialization failed: %s", esp_err_to_name(imu_init_error));
-        return false;
-    }
-
-    esp_err_t imu_pedometer_error = imu_pedometer_config(imu);
-
-    if (imu_pedometer_error != ESP_OK) {
-        ESP_LOGI(TAG, "IMU pedometer config failed: %s", esp_err_to_name(imu_pedometer_error));
-        return false;
-    }
-
-    return true;
-}
-
-static bool hr_sensor_init(i2c_master_bus_handle_t *bus, hr_sensor *hr) {
-    esp_err_t hr_init_error = hr_init(&i2c_bus_0, hr);
-
-    if (hr_init_error != ESP_OK) {
-        ESP_LOGI(TAG, "HR initialization failed: %s", esp_err_to_name(hr_init_error));
-        return false;
-    }
-
-    return true;
-}
-
-static void functionality_setup() {
+static void main_functionality_setup() {
     startup_screen(ENTER);
 
     const char *wifi_connection = "Wi-Fi...........";
@@ -152,29 +82,31 @@ static void bat_charge_gpio_init() {
     ESP_ERROR_CHECK(gpio_config(&io_config));
 }
 
-void app_main() {
-    display_init();
-    i2c_bus_init(&i2c_bus_0);
-    adc_init();
-
-    functionality_setup();
-
-    button_init(&btn_up, PIN_BUTTON_UP);
-    button_init(&btn_down, PIN_BUTTON_DOWN);
-
-    bat_charge_gpio_init();
-
+static void sleep_functionality_setup() {
     esp_sleep_enable_gpio_wakeup();
     gpio_wakeup_enable(PIN_BUTTON_UP, GPIO_INTR_LOW_LEVEL);
     gpio_wakeup_enable(PIN_BUTTON_DOWN, GPIO_INTR_LOW_LEVEL);
     esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(1ULL << PIN_BUTTON_UP, ESP_GPIO_WAKEUP_GPIO_LOW);
     esp_sleep_enable_gpio_wakeup_on_hp_periph_powerdown(1ULL << PIN_BUTTON_DOWN, ESP_GPIO_WAKEUP_GPIO_LOW);
+}
+
+void app_main() {
+    display_init();
+    i2c_bus_init(&i2c_bus_0);
+    adc_init();
+    bat_charge_gpio_init();
+
+    main_functionality_setup();
+
+    sleep_functionality_setup();
+
+    buttons_init(&btn_up, &btn_down);
 
     while (1) {
         weather_update();
 
-        buttons_reading();
-        screen_change();
+        buttons_reading(&btn_up, &btn_down);
+        screen_change(&btn_up, &btn_down);
         screen_manager(&imu, &hr);
 
         // esp_deep_sleep_start();

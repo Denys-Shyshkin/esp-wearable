@@ -5,7 +5,7 @@
 
 #define BUTTON_DEBOUNCE_US 20000
 
-void button_init(button *btn, gpio_num_t gpio) {
+static void button_init(button *btn, gpio_num_t gpio) {
     btn->gpio = gpio;
 
     gpio_config_t io_config = {
@@ -18,7 +18,12 @@ void button_init(button *btn, gpio_num_t gpio) {
     ESP_ERROR_CHECK(gpio_config(&io_config));
 }
 
-void button_is_pressed(button *btn) {
+void buttons_init(button *btn_up, button *btn_down) {
+    button_init(btn_up, PIN_BUTTON_UP);
+    button_init(btn_down, PIN_BUTTON_DOWN);
+}
+
+static void button_is_pressed(button *btn) {
     uint32_t now = esp_timer_get_time();
 
     bool button_read = gpio_get_level(btn->gpio);
@@ -38,4 +43,9 @@ void button_is_pressed(button *btn) {
     }
 
     btn->last_btn_state = button_read;
+}
+
+void buttons_reading(button *btn_up, button *btn_down) {
+    button_is_pressed(btn_up);
+    button_is_pressed(btn_down);
 }

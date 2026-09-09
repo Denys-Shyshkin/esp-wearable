@@ -404,3 +404,17 @@ void screen_manager(imu_sensor *imu, hr_sensor *hr) {
         break;
     }
 }
+
+void screen_change(button *btn_up, button *btn_down) {
+    if (btn_up->is_btn_pressed) {
+        btn_up->is_btn_pressed = 0;
+
+        go_screen_up();
+    }
+
+    if (btn_down->is_btn_pressed) {
+        btn_down->is_btn_pressed = 0;
+
+        go_screen_down();
+    }
+}

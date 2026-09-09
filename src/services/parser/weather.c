@@ -1,9 +1,12 @@
 #include "weather.h"
 #include "cJSON.h"
+#include "esp_timer.h"
 #include "services/http_requests/http_get.h"
 #include "services/time/time.h"
 #include <esp_log.h>
 #include <time.h>
+
+#define WEATHER_UPDATE_DELAY_US 30 * 60 * 1000 * 1000 // 30 mins
 
 static const char *TAG = "WEATHER PARSER";
 
@@ -83,4 +86,22 @@ bool parse_weather() {
     cJSON_Delete(root);
 
     return 1;
+}
+
+bool weather_update() {
+    uint32_t now = esp_timer_get_time();
+    static uint32_t last_weather_update = 0;
+
+    if (now - last_weather_update >= WEATHER_UPDATE_DELAY_US || last_weather_update == 0) {
+        last_weather_update = now;
+
+        uint8_t is_request_succeed = http_get(weather_url);
+        if (is_request_succeed) {
+            return parse_weather();
+        } else {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
 }

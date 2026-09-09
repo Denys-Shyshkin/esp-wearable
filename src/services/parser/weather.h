@@ -9,7 +9,7 @@ typedef struct {
     char icon[8];
 } weather_data;
 
-extern const char *weather_url;
 extern weather_data weather;
 
 bool parse_weather();
+bool weather_update();

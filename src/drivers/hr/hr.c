@@ -300,3 +300,14 @@ esp_err_t hr_read_bpm(hr_sensor *hr, bool *is_measuring, uint32_t *bpm) {
 
     return ESP_OK;
 }
+
+bool hr_sensor_init(i2c_master_bus_handle_t *bus, hr_sensor *hr) {
+    esp_err_t hr_init_error = hr_init(bus, hr);
+
+    if (hr_init_error != ESP_OK) {
+        ESP_LOGI(TAG, "HR initialization failed: %s", esp_err_to_name(hr_init_error));
+        return false;
+    }
+
+    return true;
+}

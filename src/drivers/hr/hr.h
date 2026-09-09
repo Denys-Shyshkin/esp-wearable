@@ -9,3 +9,4 @@ typedef struct {
 esp_err_t hr_init(i2c_master_bus_handle_t *bus, hr_sensor *hr);
 esp_err_t hr_read_raw(hr_sensor *hr, bool *is_available, int *raw);
 esp_err_t hr_read_bpm(hr_sensor *hr, bool *is_measuring, uint32_t *bpm);
+bool hr_sensor_init(i2c_master_bus_handle_t *bus, hr_sensor *hr);

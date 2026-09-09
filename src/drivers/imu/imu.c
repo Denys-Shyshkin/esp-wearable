@@ -301,3 +301,21 @@ esp_err_t imu_read_steps(imu_sensor *imu, uint32_t *steps) {
 
     return ESP_OK;
 }
+
+bool pedometer_init(i2c_master_bus_handle_t *bus, imu_sensor *imu) {
+    esp_err_t imu_init_error = imu_init(bus, imu);
+
+    if (imu_init_error != ESP_OK) {
+        ESP_LOGI(TAG, "IMU initialization failed: %s", esp_err_to_name(imu_init_error));
+        return false;
+    }
+
+    esp_err_t imu_pedometer_error = imu_pedometer_config(imu);
+
+    if (imu_pedometer_error != ESP_OK) {
+        ESP_LOGI(TAG, "IMU pedometer config failed: %s", esp_err_to_name(imu_pedometer_error));
+        return false;
+    }
+
+    return true;
+}
