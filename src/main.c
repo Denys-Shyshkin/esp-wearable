@@ -8,19 +8,16 @@
 #include "drivers/imu/imu.h"
 #include "drivers/wifi/wifi.h"
 #include "esp_sleep.h"
-#include "services/graphics/font_8x8.h"
 #include "services/graphics/graphics.h"
-#include "services/graphics/icons.h"
-#include "services/http_requests/http_get.h"
 #include "services/parser/weather.h"
-#include "services/screens/screens.h"
+#include "services/screens/screen_manager.h"
 #include "services/time/time.h"
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include "services/screens/startup_screen.h"
 
 #define INIT_STATUSES_QTY 2
-
 #define SUPERLOOP_DELAY 10
 
 // static const char *TAG = "MAIN";

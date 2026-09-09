@@ -23,6 +23,6 @@ extern const uint8_t MAX_SCREENS_QTY;
 
 void go_screen_up();
 void go_screen_down();
-void startup_screen(enum Screen_Event event);
-void screen_manager(imu_sensor *imu, hr_sensor *hr);
 void screen_change(button *btn_up, button *btn_down);
+void screen_manager(imu_sensor *imu, hr_sensor *hr);
+void screen_light_sleep(uint64_t sleep_time);
