@@ -7,6 +7,7 @@
 #include "drivers/i2c/i2c.h"
 #include "drivers/imu/imu.h"
 #include "drivers/wifi/wifi.h"
+#include "drivers/battery/battery.h"
 #include "esp_sleep.h"
 #include "services/graphics/graphics.h"
 #include "services/parser/weather.h"
@@ -68,17 +69,6 @@ static void main_functionality_setup() {
     gfx_draw_text(170, 160, init_statuses[is_hr_sensor_init].text, init_statuses[is_hr_sensor_init].color, 1);
 }
 
-static void bat_charge_gpio_init() {
-    gpio_config_t io_config = {
-        .pin_bit_mask = 1ULL << PIN_CHARGE,
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_ENABLE,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-    ESP_ERROR_CHECK(gpio_config(&io_config));
-}
-
 static void sleep_functionality_setup() {
     esp_sleep_enable_gpio_wakeup();
     gpio_wakeup_enable(PIN_BUTTON_UP, GPIO_INTR_LOW_LEVEL);
@@ -91,14 +81,14 @@ void app_main() {
     display_init();
     i2c_bus_init(&i2c_bus_0);
     adc_init();
-    bat_charge_gpio_init();
-
+    
     main_functionality_setup();
-
+    
     sleep_functionality_setup();
-
+    
     buttons_init(&btn_up, &btn_down);
-
+    battery_charge_pin_init();
+    
     while (1) {
         weather_update();
 

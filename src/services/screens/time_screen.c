@@ -1,39 +1,24 @@
 #include "config/config.h"
-#include "drivers/adc/adc.h"
+#include "drivers/battery/battery.h"
 #include "drivers/display/display.h"
+#include "esp_timer.h"
 #include "screen_manager.h"
 #include "services/graphics/graphics.h"
 #include "services/graphics/icons.h"
 #include "services/time/time.h"
-#include "esp_timer.h"
 
-// #define SHOW_BAT_VOLTAGE
-
-#define MAX_BAT_RAW_VALUE 4096
-#define MAX_BAT_VOLTAGE 4.2
-#define MIN_BAT_VOLTAGE 3.0
 #define TIME_SCREEN_SLEEP_TIMEOUT_US 1 * 1000 * 1000
 #define BAT_PERCENTAGE_UPDATE_INTERVAL_US 1 * 60 * 1000 * 1000
 
 static void draw_bat_percentage(enum Screen_Event event) {
     static uint8_t displayed_percentage;
     static uint64_t last_update = 0;
-
     static bool charging_state_displayed = false;
 
-    bool is_charging = gpio_get_level(PIN_CHARGE) == 1;
-    int filtered = 0;
-    adc_read_filtered(PIN_BAT, &filtered);
-    float voltage = (float)filtered * (MAX_BAT_VOLTAGE / MAX_BAT_RAW_VALUE);
-    uint8_t percentage = ((voltage - MIN_BAT_VOLTAGE) / (MAX_BAT_VOLTAGE - MIN_BAT_VOLTAGE)) * 100;
+    bool is_charging = battery_is_charging();
 
-    if (percentage > 95) {
-        percentage = 100;
-    } else if (percentage < 5) {
-        percentage = 5;
-    } else if (percentage <= 95 || percentage >= 5) {
-        percentage = (percentage / 5) * 5;
-    }
+    uint8_t percentage;
+    battery_read_percentage(&percentage);
 
     uint64_t now = esp_timer_get_time();
 
@@ -42,13 +27,6 @@ static void draw_bat_percentage(enum Screen_Event event) {
         char percentage_buffer[10];
         snprintf(percentage_buffer, sizeof(percentage_buffer), "%d%%", percentage);
         gfx_draw_text(98, 10, percentage_buffer, WHITE_COLOR, 2);
-
-#ifdef SHOW_BAT_VOLTAGE
-        gfx_fill_rect(98, 25, 70, 15, BLACK_COLOR);
-        char voltage_buffer[10];
-        snprintf(voltage_buffer, sizeof(voltage_buffer), "%.2f", voltage);
-        gfx_draw_text(98, 25, voltage_buffer, WHITE_COLOR, 2);
-#endif
 
         displayed_percentage = percentage;
         last_update = now;
