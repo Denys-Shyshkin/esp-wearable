@@ -13,6 +13,8 @@ typedef struct {
 } weather_icon_map;
 
 extern const uint32_t charging[ICON_ROWS_QTY];
+extern const uint32_t start[ICON_ROWS_QTY];
+extern const uint32_t reset[ICON_ROWS_QTY];
 
 extern const uint32_t loading[ICON_ROWS_QTY];
 extern const uint32_t loading_1[ICON_ROWS_QTY];

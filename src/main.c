@@ -43,7 +43,7 @@ button btn_up = DEFAULT_BUTTON;
 button btn_down = DEFAULT_BUTTON;
 
 static void main_functionality_setup() {
-    startup_screen(ENTER);
+    startup_screen(ENTER, func_status);
 
     const char *wifi_connection = "Wi-Fi...........";
     gfx_draw_text(40, 80, wifi_connection, LIGHT_GREY_COLOR, 1);
@@ -95,7 +95,7 @@ void app_main() {
         weather_update();
 
         buttons_reading(&btn_up, &btn_down);
-        screen_change(&btn_up, &btn_down);
+        screen_change(&btn_up, &btn_down, func_status);
         screen_manager(&imu, &hr, func_status);
 
         // esp_deep_sleep_start();

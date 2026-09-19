@@ -1,6 +1,7 @@
 #include "screen_manager.h"
 #include "config/config.h"
 #include "esp_sleep.h"
+#include "esp_system.h"
 #include "heart_screen.h"
 #include "startup_screen.h"
 #include "time_screen.h"
@@ -32,17 +33,41 @@ void go_screen_down() {
     }
 }
 
-void screen_change(button *btn_up, button *btn_down) {
-    if (btn_up->is_btn_pressed) {
-        btn_up->is_btn_pressed = 0;
+void screen_change(button *btn_up, button *btn_down, bool func_status[]) {
+    if (screen_number == STARTUP) {
+        if (btn_up->is_btn_pressed) {
+            btn_up->is_btn_pressed = 0;
 
-        go_screen_up();
-    }
+            go_screen_up();
+        }
 
-    if (btn_down->is_btn_pressed) {
-        btn_down->is_btn_pressed = 0;
+        
+        if (btn_down->is_btn_pressed) {
+            btn_down->is_btn_pressed = 0;
 
-        go_screen_down();
+            bool has_fails = false;
+            for (int i = 0; i < FUNC_TOTAL_COUNT; i++) {
+                if (!func_status[i]) {
+                    has_fails = true;
+                }
+            }
+
+            if (has_fails) {
+                esp_restart();
+            }
+        }
+    } else {
+        if (btn_up->is_btn_pressed) {
+            btn_up->is_btn_pressed = 0;
+
+            go_screen_up();
+        }
+
+        if (btn_down->is_btn_pressed) {
+            btn_down->is_btn_pressed = 0;
+
+            go_screen_down();
+        }
     }
 }
 
@@ -75,7 +100,7 @@ void screen_manager(imu_sensor *imu, hr_sensor *hr, bool func_status[]) {
 
     switch (screen_number) {
     case STARTUP:
-        startup_screen(event);
+        startup_screen(event, func_status);
         break;
 
     case TIME:
