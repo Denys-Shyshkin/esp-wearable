@@ -15,3 +15,12 @@
 
 #define PIN_SDA GPIO_NUM_7
 #define PIN_SCL GPIO_NUM_8
+
+enum Main_Func {
+    WIFI,
+    TIME_SYNC,
+    WEATHER_UPDATE,
+    IMU_SENSOR,
+    HR_SENSOR,
+    FUNC_TOTAL_COUNT,
+};

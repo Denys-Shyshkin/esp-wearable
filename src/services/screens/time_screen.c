@@ -121,7 +121,7 @@ static void draw_steps_count(enum Screen_Event event, imu_sensor *imu) {
     }
 }
 
-void time_screen(enum Screen_Event event, imu_sensor *imu) {
+void time_screen(enum Screen_Event event, imu_sensor *imu, bool func_status[]) {
     struct tm timeinfo;
     get_time(&timeinfo);
 
@@ -130,6 +130,16 @@ void time_screen(enum Screen_Event event, imu_sensor *imu) {
 
         const char *time_separator = ":";
         gfx_draw_text(103, 95, time_separator, WHITE_COLOR, 5);
+
+        if (!func_status[TIME_SYNC]) {
+            const char *not_synced = "Time is not synced";
+            gfx_draw_text(50, 150, not_synced, RED_COLOR, 1);
+        }
+
+        if (!func_status[IMU_SENSOR]) {
+            const char *not_found = "Sensor not found";
+            gfx_draw_text(50, 225, not_found, RED_COLOR, 1);
+        }
     }
 
     draw_bat_percentage(event);
@@ -138,7 +148,9 @@ void time_screen(enum Screen_Event event, imu_sensor *imu) {
     draw_hours_minutes(event, &timeinfo);
     draw_date(event, &timeinfo);
 
-    draw_steps_count(event, imu);
+    if (func_status[IMU_SENSOR]) {
+        draw_steps_count(event, imu);
+    }
 
     screen_light_sleep(TIME_SCREEN_SLEEP_TIMEOUT_US);
 }

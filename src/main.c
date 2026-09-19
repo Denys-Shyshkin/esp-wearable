@@ -33,6 +33,8 @@ init_status const ok_status = {.text = "OK", .color = GREEN_COLOR};
 
 init_status init_statuses[INIT_STATUSES_QTY] = {fail_status, ok_status};
 
+bool func_status[FUNC_TOTAL_COUNT] = {false};
+
 i2c_master_bus_handle_t i2c_bus_0;
 imu_sensor imu;
 hr_sensor hr;
@@ -45,28 +47,28 @@ static void main_functionality_setup() {
 
     const char *wifi_connection = "Wi-Fi...........";
     gfx_draw_text(40, 80, wifi_connection, LIGHT_GREY_COLOR, 1);
-    uint8_t is_wifi_init = wifi_init_sta();
-    gfx_draw_text(170, 80, init_statuses[is_wifi_init].text, init_statuses[is_wifi_init].color, 1);
+    func_status[WIFI] = wifi_init_sta();
+    gfx_draw_text(170, 80, init_statuses[func_status[WIFI]].text, init_statuses[func_status[WIFI]].color, 1);
 
     const char *time_synced = "Time synced.....";
     gfx_draw_text(40, 100, time_synced, LIGHT_GREY_COLOR, 1);
-    uint8_t is_sync_time = sync_time();
-    gfx_draw_text(170, 100, init_statuses[is_sync_time].text, init_statuses[is_sync_time].color, 1);
+    func_status[TIME_SYNC] = sync_time();
+    gfx_draw_text(170, 100, init_statuses[func_status[TIME_SYNC]].text, init_statuses[func_status[TIME_SYNC]].color, 1);
 
     const char *weather_updated = "Weather update..";
     gfx_draw_text(40, 120, weather_updated, LIGHT_GREY_COLOR, 1);
-    uint8_t is_weather_updated = weather_update();
-    gfx_draw_text(170, 120, init_statuses[is_weather_updated].text, init_statuses[is_weather_updated].color, 1);
+    func_status[WEATHER_UPDATE] = weather_update();
+    gfx_draw_text(170, 120, init_statuses[func_status[WEATHER_UPDATE]].text, init_statuses[func_status[WEATHER_UPDATE]].color, 1);
 
     const char *mui_init = "IMU init........";
     gfx_draw_text(40, 140, mui_init, LIGHT_GREY_COLOR, 1);
-    uint8_t is_pedometer_inited = pedometer_init(&i2c_bus_0, &imu);
-    gfx_draw_text(170, 140, init_statuses[is_pedometer_inited].text, init_statuses[is_pedometer_inited].color, 1);
+    func_status[IMU_SENSOR] = pedometer_init(&i2c_bus_0, &imu);
+    gfx_draw_text(170, 140, init_statuses[func_status[IMU_SENSOR]].text, init_statuses[func_status[IMU_SENSOR]].color, 1);
 
     const char *hr_sensor = "HR sensor.......";
     gfx_draw_text(40, 160, hr_sensor, LIGHT_GREY_COLOR, 1);
-    uint8_t is_hr_sensor_init = hr_sensor_init(&i2c_bus_0, &hr);
-    gfx_draw_text(170, 160, init_statuses[is_hr_sensor_init].text, init_statuses[is_hr_sensor_init].color, 1);
+    func_status[HR_SENSOR] = hr_sensor_init(&i2c_bus_0, &hr);
+    gfx_draw_text(170, 160, init_statuses[func_status[HR_SENSOR]].text, init_statuses[func_status[HR_SENSOR]].color, 1);
 }
 
 static void sleep_functionality_setup() {
@@ -94,7 +96,7 @@ void app_main() {
 
         buttons_reading(&btn_up, &btn_down);
         screen_change(&btn_up, &btn_down);
-        screen_manager(&imu, &hr);
+        screen_manager(&imu, &hr, func_status);
 
         // esp_deep_sleep_start();
 

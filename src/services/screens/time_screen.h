@@ -2,4 +2,4 @@
 
 #include "drivers/imu/imu.h"
 
-void time_screen(enum Screen_Event event, imu_sensor *imu);
+void time_screen(enum Screen_Event event, imu_sensor *imu, bool func_status[]);

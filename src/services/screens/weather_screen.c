@@ -1,8 +1,9 @@
-#include "screen_manager.h"
+#include "config/config.h"
 #include "drivers/display/display.h"
+#include "screen_manager.h"
+#include "services/graphics/font_8x8.h"
 #include "services/graphics/graphics.h"
 #include "services/graphics/icons.h"
-#include "services/graphics/font_8x8.h"
 #include "services/parser/weather.h"
 
 static void draw_weather_icon(enum Screen_Event event) {
@@ -72,7 +73,7 @@ static void draw_humidity(enum Screen_Event event) {
     }
 }
 
-void weather_screen(enum Screen_Event event) {
+void weather_screen(enum Screen_Event event, bool func_status[]) {
     if (event == ENTER) {
         display_clear();
 
@@ -81,21 +82,28 @@ void weather_screen(enum Screen_Event event) {
 
         gfx_draw_line(60, 30, 180, 30, WHITE_COLOR);
 
-        gfx_draw_spec_char(160, 60, degree_char, WHITE_COLOR, 4);
-
-        const char *temp_unit = "C";
-        gfx_draw_text(190, 60, temp_unit, WHITE_COLOR, 5);
-
-        gfx_draw_line(20, 120, 220, 120, WHITE_COLOR);
-
-        gfx_draw_icon(30, 130, wind_icon, LIGHT_BLUE_COLOR, 1);
-        gfx_draw_icon(30, 170, pressure_icon, LIGHT_BLUE_COLOR, 1);
-        gfx_draw_icon(30, 210, humidity_icon, LIGHT_BLUE_COLOR, 1);
+        if (func_status[WEATHER_UPDATE]) {
+            gfx_draw_spec_char(160, 60, degree_char, WHITE_COLOR, 4);
+    
+            const char *temp_unit = "C";
+            gfx_draw_text(190, 60, temp_unit, WHITE_COLOR, 5);
+    
+            gfx_draw_line(20, 120, 220, 120, WHITE_COLOR);
+    
+            gfx_draw_icon(30, 130, wind_icon, LIGHT_BLUE_COLOR, 1);
+            gfx_draw_icon(30, 170, pressure_icon, LIGHT_BLUE_COLOR, 1);
+            gfx_draw_icon(30, 210, humidity_icon, LIGHT_BLUE_COLOR, 1);
+        } else {
+            const char *no_data = "No data";
+            gfx_draw_text(70, 50, no_data, RED_COLOR, 2);
+        }
     }
 
-    draw_weather_icon(event);
-    draw_temperature(event);
-    draw_wind(event);
-    draw_pressure(event);
-    draw_humidity(event);
+    if (func_status[WEATHER_UPDATE]) {
+        draw_weather_icon(event);
+        draw_temperature(event);
+        draw_wind(event);
+        draw_pressure(event);
+        draw_humidity(event);
+    }
 }

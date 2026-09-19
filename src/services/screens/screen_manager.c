@@ -65,7 +65,7 @@ void screen_light_sleep(uint64_t sleep_time) {
 #endif
 }
 
-void screen_manager(imu_sensor *imu, hr_sensor *hr) {
+void screen_manager(imu_sensor *imu, hr_sensor *hr, bool func_status[]) {
     enum Screen_Event event = UPDATE;
 
     if (screen_number != last_screen_number) {
@@ -79,15 +79,15 @@ void screen_manager(imu_sensor *imu, hr_sensor *hr) {
         break;
 
     case TIME:
-        time_screen(event, imu);
+        time_screen(event, imu, func_status);
         break;
 
     case WEATHER:
-        weather_screen(event);
+        weather_screen(event, func_status);
         break;
 
     case HEART:
-        heart_screen(event, hr);
+        heart_screen(event, hr, func_status);
         break;
 
     case TOTAL_COUNT:
