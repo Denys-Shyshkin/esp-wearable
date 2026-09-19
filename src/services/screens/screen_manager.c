@@ -10,7 +10,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-#define SLEEP_MODE_ON
+// #define SLEEP_MODE_ON
 
 enum Screen screen_number = STARTUP;
 static enum Screen last_screen_number = STARTUP;

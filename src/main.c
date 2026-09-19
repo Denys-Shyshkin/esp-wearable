@@ -21,6 +21,8 @@
 #define INIT_STATUSES_QTY 2
 #define SUPERLOOP_DELAY 10
 
+#define DISPLAY_INACTIVE_TIMEOUT 1 * 60 * 1000 * 1000
+
 // static const char *TAG = "MAIN";
 
 typedef struct {
@@ -99,6 +101,7 @@ void app_main() {
         screen_manager(&imu, &hr, func_status);
 
         // esp_deep_sleep_start();
+        display_auto_inactive(DISPLAY_INACTIVE_TIMEOUT);
 
         vTaskDelay(pdMS_TO_TICKS(SUPERLOOP_DELAY));
     }

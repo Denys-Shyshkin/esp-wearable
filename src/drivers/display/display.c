@@ -1,10 +1,12 @@
 #include "display.h"
 #include "config/config.h"
 #include "driver/gpio.h"
+#include "drivers/button/button.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_st7789.h"
 #include "esp_lcd_panel_vendor.h"
+#include "esp_timer.h"
 #include <esp_log.h>
 
 #define LCD_H_RES 240
@@ -18,6 +20,7 @@
 static const char *TAG = "DISPLAY";
 
 static esp_lcd_panel_handle_t panel_handle = NULL;
+bool is_display_inactive = false;
 
 static bool display_validate_start(uint16_t x, uint16_t y) {
     if (x >= LCD_H_RES || y >= LCD_V_RES) {
@@ -128,4 +131,22 @@ void display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, 
 
 void display_clear() {
     display_fill_rect(0, 0, 240, 240, 0x0000);
+}
+
+void display_auto_inactive(uint64_t inactive_timeout) {
+    uint64_t now = esp_timer_get_time();
+
+    if (now - last_button_interaction >= inactive_timeout && !is_display_inactive) {
+        esp_lcd_panel_disp_sleep(panel_handle, true);
+        gpio_set_level(PIN_BKL, 0);
+
+        is_display_inactive = true;
+    }
+}
+
+void display_wakeup() {
+    esp_lcd_panel_disp_sleep(panel_handle, false);
+    gpio_set_level(PIN_BKL, 1);
+
+    is_display_inactive = false;
 }

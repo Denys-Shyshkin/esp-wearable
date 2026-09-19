@@ -1,9 +1,15 @@
 #include "button.h"
 #include "config/config.h"
 #include "driver/gpio.h"
+#include "drivers/display/display.h"
 #include "esp_timer.h"
+#include <esp_log.h>
 
 #define BUTTON_DEBOUNCE_US 20000
+
+// static const char *TAG = "BTN";
+
+uint64_t last_button_interaction = 0;
 
 static void button_init(button *btn, gpio_num_t gpio) {
     btn->gpio = gpio;
@@ -37,7 +43,13 @@ static void button_is_pressed(button *btn) {
             btn->btn_state = button_read;
 
             if (button_read == 0) {
-                btn->is_btn_pressed = 1;
+                if (is_display_inactive) {
+                    display_wakeup();
+                } else {
+                    btn->is_btn_pressed = 1;
+                }
+
+                last_button_interaction = now;
             }
         }
     }

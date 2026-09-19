@@ -4,6 +4,8 @@
 
 #define DEFAULT_BUTTON (button){.gpio = -1, .btn_state = 1, .last_btn_state = 1, .s_last_btn_pressed = 0, .is_btn_pressed = 0}
 
+extern uint64_t last_button_interaction;
+
 typedef struct {
     gpio_num_t gpio;
     bool btn_state;
