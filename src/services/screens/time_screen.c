@@ -15,14 +15,12 @@ static void draw_bat_percentage(enum Screen_Event event) {
     static uint64_t last_update = 0;
     static bool charging_state_displayed = false;
 
-    bool is_charging = battery_is_charging();
-
     uint8_t percentage;
     battery_read_percentage(&percentage);
 
     uint64_t now = esp_timer_get_time();
 
-    if ((((displayed_percentage > percentage && !is_charging) || (displayed_percentage < percentage && is_charging)) && now - last_update >= BAT_PERCENTAGE_UPDATE_INTERVAL_US) || event == ENTER) {
+    if ((((displayed_percentage > percentage && !battery_is_charging) || (displayed_percentage < percentage && battery_is_charging)) && now - last_update >= BAT_PERCENTAGE_UPDATE_INTERVAL_US) || event == ENTER) {
         gfx_fill_rect(98, 10, 70, 15, BLACK_COLOR); // clear percentage
         char percentage_buffer[10];
         snprintf(percentage_buffer, sizeof(percentage_buffer), "%d%%", percentage);
@@ -32,14 +30,14 @@ static void draw_bat_percentage(enum Screen_Event event) {
         last_update = now;
     }
 
-    if (charging_state_displayed != is_charging || event == ENTER) {
-        if (is_charging) {
+    if (charging_state_displayed != battery_is_charging || event == ENTER) {
+        if (battery_is_charging) {
             gfx_draw_icon(60, 0, charging, GREEN_COLOR, 1);
         } else {
             gfx_fill_rect(60, 0, 30, 40, BLACK_COLOR);
         }
 
-        charging_state_displayed = is_charging;
+        charging_state_displayed = battery_is_charging;
     }
 }
 
