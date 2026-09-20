@@ -31,8 +31,8 @@ typedef struct {
     uint16_t color;
 } init_status;
 
-init_status const fail_status = {.text = "FAIL", .color = RED_COLOR};
-init_status const ok_status = {.text = "OK", .color = GREEN_COLOR};
+init_status const fail_status = {.text = "FAIL", .color = COLOR_ERROR};
+init_status const ok_status = {.text = "OK", .color = COLOR_SUCCESS};
 
 init_status init_statuses[INIT_STATUSES_QTY] = {fail_status, ok_status};
 
@@ -49,27 +49,27 @@ static void main_functionality_setup() {
     startup_screen(ENTER, func_status);
 
     const char *wifi_connection = "Wi-Fi...........";
-    gfx_draw_text(40, 80, wifi_connection, LIGHT_GREY_COLOR, 1);
+    gfx_draw_text(40, 80, wifi_connection, COLOR_PRIMARY, 1);
     func_status[WIFI] = wifi_init_sta();
     gfx_draw_text(170, 80, init_statuses[func_status[WIFI]].text, init_statuses[func_status[WIFI]].color, 1);
 
     const char *time_synced = "Time synced.....";
-    gfx_draw_text(40, 100, time_synced, LIGHT_GREY_COLOR, 1);
+    gfx_draw_text(40, 100, time_synced, COLOR_PRIMARY, 1);
     func_status[TIME_SYNC] = sync_time();
     gfx_draw_text(170, 100, init_statuses[func_status[TIME_SYNC]].text, init_statuses[func_status[TIME_SYNC]].color, 1);
 
     const char *weather_updated = "Weather update..";
-    gfx_draw_text(40, 120, weather_updated, LIGHT_GREY_COLOR, 1);
+    gfx_draw_text(40, 120, weather_updated, COLOR_PRIMARY, 1);
     func_status[WEATHER_UPDATE] = weather_update();
     gfx_draw_text(170, 120, init_statuses[func_status[WEATHER_UPDATE]].text, init_statuses[func_status[WEATHER_UPDATE]].color, 1);
 
     const char *mui_init = "IMU init........";
-    gfx_draw_text(40, 140, mui_init, LIGHT_GREY_COLOR, 1);
+    gfx_draw_text(40, 140, mui_init, COLOR_PRIMARY, 1);
     func_status[IMU_SENSOR] = pedometer_init(&i2c_bus_0, &imu);
     gfx_draw_text(170, 140, init_statuses[func_status[IMU_SENSOR]].text, init_statuses[func_status[IMU_SENSOR]].color, 1);
 
     const char *hr_sensor = "HR sensor.......";
-    gfx_draw_text(40, 160, hr_sensor, LIGHT_GREY_COLOR, 1);
+    gfx_draw_text(40, 160, hr_sensor, COLOR_PRIMARY, 1);
     func_status[HR_SENSOR] = hr_sensor_init(&i2c_bus_0, &hr);
     gfx_draw_text(170, 160, init_statuses[func_status[HR_SENSOR]].text, init_statuses[func_status[HR_SENSOR]].color, 1);
 }

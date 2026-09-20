@@ -6,6 +6,9 @@
 #include "services/graphics/graphics.h"
 #include "services/graphics/icons.h"
 #include "services/time/time.h"
+#include <esp_log.h>
+
+// static const char *TAG = "TIME SCREEN";
 
 #define TIME_SCREEN_SLEEP_TIMEOUT_US 1 * 1000 * 1000
 #define BAT_PERCENTAGE_UPDATE_INTERVAL_US 1 * 60 * 1000 * 1000
@@ -22,10 +25,10 @@ static void draw_bat_percentage(enum Screen_Event event) {
 
     if ((((displayed_percentage > percentage && !battery_is_charging) || (displayed_percentage < percentage && battery_is_charging)) && now - last_update >= BAT_PERCENTAGE_UPDATE_INTERVAL_US) ||
         event == ENTER) {
-        gfx_fill_rect(98, 10, 70, 15, BLACK_COLOR); // clear percentage
+        gfx_fill_rect(98, 10, 70, 15, COLOR_BACKGROUND); // clear percentage
         char percentage_buffer[10];
         snprintf(percentage_buffer, sizeof(percentage_buffer), "%d%%", percentage);
-        gfx_draw_text(98, 10, percentage_buffer, WHITE_COLOR, 2);
+        gfx_draw_text(98, 10, percentage_buffer, COLOR_PRIMARY, 2);
 
         displayed_percentage = percentage;
         last_update = now;
@@ -33,9 +36,9 @@ static void draw_bat_percentage(enum Screen_Event event) {
 
     if (charging_state_displayed != battery_is_charging || event == ENTER) {
         if (battery_is_charging) {
-            gfx_draw_icon(60, 0, charging, GREEN_COLOR, 1);
+            gfx_draw_icon(60, 0, charging, COLOR_SUCCESS, 1);
         } else {
-            gfx_fill_rect(60, 0, 30, 40, BLACK_COLOR);
+            gfx_fill_rect(60, 0, 30, 40, COLOR_BACKGROUND);
         }
 
         charging_state_displayed = battery_is_charging;
@@ -46,10 +49,10 @@ static void draw_seconds(enum Screen_Event event, struct tm *timeinfo) {
     static uint8_t displayed_seconds;
 
     if (displayed_seconds != timeinfo->tm_sec || event == ENTER) {
-        gfx_fill_rect(210, 70, 30, 15, BLACK_COLOR); // clear seconds
+        gfx_fill_rect(210, 70, 30, 15, COLOR_BACKGROUND); // clear seconds
         char sec_buff[3];
         strftime(sec_buff, sizeof(sec_buff), "%S", timeinfo);
-        gfx_draw_text(210, 70, sec_buff, WHITE_COLOR, 2);
+        gfx_draw_text(210, 70, sec_buff, COLOR_PRIMARY, 2);
 
         displayed_seconds = timeinfo->tm_sec;
     }
@@ -60,19 +63,19 @@ static void draw_hours_minutes(enum Screen_Event event, struct tm *timeinfo) {
     static uint8_t displayed_hours;
 
     if (displayed_minutes != timeinfo->tm_min || event == ENTER) {
-        gfx_fill_rect(135, 90, 105, 50, BLACK_COLOR); // clear mins
+        gfx_fill_rect(135, 90, 105, 50, COLOR_BACKGROUND); // clear mins
         char mins_buff[6];
         strftime(mins_buff, sizeof(mins_buff), "%M", timeinfo);
-        gfx_draw_text(135, 90, mins_buff, WHITE_COLOR, 7);
+        gfx_draw_text(135, 90, mins_buff, COLOR_PRIMARY, 7);
 
         displayed_minutes = timeinfo->tm_min;
     }
 
     if (displayed_hours != timeinfo->tm_hour || event == ENTER) {
-        gfx_fill_rect(0, 90, 105, 50, BLACK_COLOR); // clear hours
+        gfx_fill_rect(0, 90, 105, 50, COLOR_BACKGROUND); // clear hours
         char hour_buff[6];
         strftime(hour_buff, sizeof(hour_buff), "%H", timeinfo);
-        gfx_draw_text(0, 90, hour_buff, WHITE_COLOR, 7);
+        gfx_draw_text(0, 90, hour_buff, COLOR_PRIMARY, 7);
 
         displayed_hours = timeinfo->tm_hour;
     }
@@ -82,10 +85,10 @@ static void draw_date(enum Screen_Event event, struct tm *timeinfo) {
     static uint8_t displayed_date;
 
     if (displayed_date != timeinfo->tm_mday || event == ENTER) {
-        gfx_fill_rect(0, 60, 200, 30, BLACK_COLOR); // clear date
+        gfx_fill_rect(0, 60, 200, 30, COLOR_BACKGROUND); // clear date
         char date_buff[20];
         strftime(date_buff, sizeof(date_buff), "%a, %b %d", timeinfo);
-        gfx_draw_text(0, 70, date_buff, WHITE_COLOR, 2);
+        gfx_draw_text(0, 70, date_buff, COLOR_SECONDARY, 2);
 
         displayed_date = timeinfo->tm_mday;
     }
@@ -111,10 +114,10 @@ static void draw_steps_count(enum Screen_Event event, imu_sensor *imu) {
     imu_read_steps(imu, &steps_count);
 
     if (displayed_steps != steps_count || event == ENTER) {
-        gfx_fill_rect(70, 225, 100, 30, BLACK_COLOR); // clear steps
+        gfx_fill_rect(70, 225, 100, 30, COLOR_BACKGROUND); // clear steps
         char steps_buff[6];
         snprintf(steps_buff, sizeof(steps_buff), "%ld", steps_count);
-        gfx_draw_text(get_steps_count_position(steps_count), 225, steps_buff, WHITE_COLOR, 2);
+        gfx_draw_text(get_steps_count_position(steps_count), 215, steps_buff, COLOR_PRIMARY, 2);
 
         displayed_steps = steps_count;
     }
@@ -128,16 +131,16 @@ void time_screen(enum Screen_Event event, imu_sensor *imu, bool func_status[]) {
         display_clear();
 
         const char *time_separator = ":";
-        gfx_draw_text(103, 95, time_separator, WHITE_COLOR, 5);
+        gfx_draw_text(103, 95, time_separator, COLOR_PRIMARY, 5);
 
         if (!func_status[TIME_SYNC]) {
             const char *not_synced = "Time is not synced";
-            gfx_draw_text(50, 150, not_synced, RED_COLOR, 1);
+            gfx_draw_text(50, 150, not_synced, COLOR_ERROR, 1);
         }
 
         if (!func_status[IMU_SENSOR]) {
             const char *not_found = "Sensor not found";
-            gfx_draw_text(50, 225, not_found, RED_COLOR, 1);
+            gfx_draw_text(50, 225, not_found, COLOR_ERROR, 1);
         }
     }
 

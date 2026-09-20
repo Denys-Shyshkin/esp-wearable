@@ -9,8 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// static const char *TAG = "GFX";
-
 static uint16_t max(uint16_t a, uint16_t b) {
     return (a > b) ? a : b;
 }
@@ -148,7 +146,7 @@ void gfx_animation(uint16_t x, uint16_t y, uint16_t width, uint16_t height, cons
     if (now - last_frame_draw >= frames_delay) {
         last_frame_draw = now;
 
-        gfx_fill_rect(x, y, width, height, BLACK_COLOR);
+        gfx_fill_rect(x, y, width, height, COLOR_BACKGROUND);
         gfx_draw_icon(frames[current_frame].x, frames[current_frame].y, frames[current_frame].icon, frames[current_frame].color, frames[current_frame].scale);
 
         current_frame++;

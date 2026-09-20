@@ -9,13 +9,13 @@ void startup_screen(enum Screen_Event event, bool func_status[]) {
         display_clear();
 
         const char *startup = "STARTING";
-        gfx_draw_text(60, 10, startup, SEA_GREEN_COLOR, 2);
+        gfx_draw_text(60, 10, startup, COLOR_SECONDARY, 2);
     } else {
-        static bool is_displayed = false;
+        static bool is_controls_displayed = false;
 
-        if (!is_displayed) {
-            gfx_draw_icon(200, 30, start, GREEN_COLOR, 1);
-            gfx_fill_rect(235, 30, 2, 30, GREEN_COLOR);
+        if (!is_controls_displayed) {
+            gfx_draw_icon(200, 30, start, COLOR_SUCCESS, 1);
+            gfx_fill_rect(235, 30, 2, 30, COLOR_SUCCESS);
 
 
             bool has_fails = false;
@@ -26,11 +26,11 @@ void startup_screen(enum Screen_Event event, bool func_status[]) {
             }
 
             if (has_fails) {
-                gfx_draw_icon(200, 190, reset, RED_COLOR, 1);
-                gfx_fill_rect(235, 190, 2, 30, RED_COLOR);
+                gfx_draw_icon(200, 190, reset, COLOR_ERROR, 1);
+                gfx_fill_rect(235, 190, 2, 30, COLOR_ERROR);
             }
 
-            is_displayed = true;
+            is_controls_displayed = true;
         }
     }
 }
