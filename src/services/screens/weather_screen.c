@@ -6,6 +6,8 @@
 #include "services/graphics/icons.h"
 #include "services/parser/weather.h"
 
+#define WEATHER_SCREEN_SLEEP_TIMEOUT_US 15 * 60 * 1000 * 1000
+
 static void draw_weather_icon(enum Screen_Event event) {
     static char *displayed_icon;
 
@@ -84,12 +86,12 @@ void weather_screen(enum Screen_Event event, bool func_status[]) {
 
         if (func_status[WEATHER_UPDATE]) {
             gfx_draw_spec_char(160, 60, degree_char, WHITE_COLOR, 4);
-    
+
             const char *temp_unit = "C";
             gfx_draw_text(190, 60, temp_unit, WHITE_COLOR, 5);
-    
+
             gfx_draw_line(20, 120, 220, 120, WHITE_COLOR);
-    
+
             gfx_draw_icon(30, 130, wind_icon, LIGHT_BLUE_COLOR, 1);
             gfx_draw_icon(30, 170, pressure_icon, LIGHT_BLUE_COLOR, 1);
             gfx_draw_icon(30, 210, humidity_icon, LIGHT_BLUE_COLOR, 1);
@@ -106,4 +108,8 @@ void weather_screen(enum Screen_Event event, bool func_status[]) {
         draw_pressure(event);
         draw_humidity(event);
     }
+
+#ifdef MCU_LIGHT_SLEEP_MODE_ON
+    screen_light_sleep(WEATHER_SCREEN_SLEEP_TIMEOUT_US);
+#endif
 }

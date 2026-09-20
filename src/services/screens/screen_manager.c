@@ -59,7 +59,6 @@ void screen_change(button *btn_up, button *btn_down, bool func_status[]) {
 }
 
 void screen_light_sleep(uint64_t sleep_time) {
-#ifdef MCU_LIGHT_SLEEP_MODE_ON
     esp_sleep_enable_timer_wakeup(sleep_time);
     esp_light_sleep_start();
 
@@ -74,7 +73,6 @@ void screen_light_sleep(uint64_t sleep_time) {
             go_screen_down();
         }
     }
-#endif
 }
 
 void screen_manager(imu_sensor *imu, hr_sensor *hr, bool func_status[]) {

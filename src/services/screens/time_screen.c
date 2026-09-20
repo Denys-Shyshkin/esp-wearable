@@ -20,7 +20,8 @@ static void draw_bat_percentage(enum Screen_Event event) {
 
     uint64_t now = esp_timer_get_time();
 
-    if ((((displayed_percentage > percentage && !battery_is_charging) || (displayed_percentage < percentage && battery_is_charging)) && now - last_update >= BAT_PERCENTAGE_UPDATE_INTERVAL_US) || event == ENTER) {
+    if ((((displayed_percentage > percentage && !battery_is_charging) || (displayed_percentage < percentage && battery_is_charging)) && now - last_update >= BAT_PERCENTAGE_UPDATE_INTERVAL_US) ||
+        event == ENTER) {
         gfx_fill_rect(98, 10, 70, 15, BLACK_COLOR); // clear percentage
         char percentage_buffer[10];
         snprintf(percentage_buffer, sizeof(percentage_buffer), "%d%%", percentage);
@@ -150,5 +151,7 @@ void time_screen(enum Screen_Event event, imu_sensor *imu, bool func_status[]) {
         draw_steps_count(event, imu);
     }
 
+#ifdef MCU_LIGHT_SLEEP_MODE_ON
     screen_light_sleep(TIME_SCREEN_SLEEP_TIMEOUT_US);
+#endif
 }
