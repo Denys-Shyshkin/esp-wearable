@@ -10,8 +10,6 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-// #define SLEEP_MODE_ON
-
 enum Screen screen_number = STARTUP;
 static enum Screen last_screen_number = STARTUP;
 
@@ -61,7 +59,7 @@ void screen_change(button *btn_up, button *btn_down, bool func_status[]) {
 }
 
 void screen_light_sleep(uint64_t sleep_time) {
-#ifdef SLEEP_MODE_ON
+#ifdef MCU_LIGHT_SLEEP_MODE_ON
     esp_sleep_enable_timer_wakeup(sleep_time);
     esp_light_sleep_start();
 

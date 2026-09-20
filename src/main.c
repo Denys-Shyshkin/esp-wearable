@@ -1,27 +1,28 @@
 #include "config/config.h"
 #include "driver/i2c_master.h"
 #include "drivers/adc/adc.h"
+#include "drivers/battery/battery.h"
 #include "drivers/button/button.h"
 #include "drivers/display/display.h"
 #include "drivers/hr/hr.h"
 #include "drivers/i2c/i2c.h"
 #include "drivers/imu/imu.h"
 #include "drivers/wifi/wifi.h"
-#include "drivers/battery/battery.h"
 #include "esp_sleep.h"
 #include "services/graphics/graphics.h"
 #include "services/parser/weather.h"
 #include "services/screens/screen_manager.h"
+#include "services/screens/startup_screen.h"
 #include "services/time/time.h"
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include "services/screens/startup_screen.h"
 
 #define INIT_STATUSES_QTY 2
 #define SUPERLOOP_DELAY 10
 
 #define DISPLAY_INACTIVE_TIMEOUT 1 * 60 * 1000 * 1000
+#define DISPLAY_SLEEP_TIMEOUT 2 * 60 * 1000 * 1000
 
 // static const char *TAG = "MAIN";
 
@@ -85,14 +86,14 @@ void app_main() {
     display_init();
     i2c_bus_init(&i2c_bus_0);
     adc_init();
-    
+
     main_functionality_setup();
-    
+
     sleep_functionality_setup();
-    
+
     buttons_init(&btn_up, &btn_down);
     battery_charge_pin_init();
-    
+
     while (1) {
         weather_update();
 
@@ -101,7 +102,14 @@ void app_main() {
         screen_manager(&imu, &hr, func_status);
 
         // esp_deep_sleep_start();
-        // display_auto_inactive(DISPLAY_INACTIVE_TIMEOUT);
+
+#ifdef DISPLAY_INACTIVE_MODE_ON
+        display_auto_inactive(DISPLAY_INACTIVE_TIMEOUT);
+#endif
+
+#ifdef DISPLAY_SLEEP_MODE_ON
+        display_auto_sleep(DISPLAY_SLEEP_TIMEOUT);
+#endif
 
         vTaskDelay(pdMS_TO_TICKS(SUPERLOOP_DELAY));
     }

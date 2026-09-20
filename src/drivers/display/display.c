@@ -1,6 +1,7 @@
 #include "display.h"
 #include "config/config.h"
 #include "driver/gpio.h"
+#include "driver/ledc.h"
 #include "drivers/button/button.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
@@ -8,6 +9,7 @@
 #include "esp_lcd_panel_vendor.h"
 #include "esp_timer.h"
 #include <esp_log.h>
+#include <math.h>
 
 #define LCD_H_RES 240
 #define LCD_V_RES 240
@@ -15,11 +17,16 @@
 #define LCD_CMD_BITS 8
 #define LCD_PARAM_BITS 8
 
+#define BKL_PWM_FREQ_HZ 5000
+#define BKL_PWM_RESOLUTION LEDC_TIMER_10_BIT
+#define BKL_PWM_MAX_DUTY 1023
+
 #define LCD_HOST SPI2_HOST
 
 static const char *TAG = "DISPLAY";
 
 static esp_lcd_panel_handle_t panel_handle = NULL;
+bool is_display_sleep = false;
 bool is_display_inactive = false;
 
 static bool display_validate_start(uint16_t x, uint16_t y) {
@@ -52,14 +59,43 @@ void display_clip_rect(uint16_t x, uint16_t y, uint16_t *width, uint16_t *height
     }
 }
 
+void display_brightness_percentage(uint8_t brightness) {
+    if (brightness > 100) {
+        brightness = 100;
+    }
+
+    // Convert 0-100% perceptual brightness into a gamma-corrected PWM duty cycle.
+    float normalized = brightness / 100.0f;
+    float corrected = powf(normalized, 2.2f);
+
+    uint32_t duty = (uint32_t)(corrected * BKL_PWM_MAX_DUTY);
+
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+}
+
 void display_init() {
-    ESP_LOGI(TAG, "Turn on LCD backlight");
-    gpio_config_t bk_gpio_config = {
-        .mode = GPIO_MODE_OUTPUT,
-        .pin_bit_mask = 1ULL << PIN_BKL,
+    ESP_LOGI(TAG, "Initialize LCD backlight PWM");
+
+    ledc_timer_config_t timer_config = {
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .timer_num = LEDC_TIMER_0,
+        .duty_resolution = BKL_PWM_RESOLUTION,
+        .freq_hz = BKL_PWM_FREQ_HZ,
+        .clk_cfg = LEDC_AUTO_CLK,
     };
-    ESP_ERROR_CHECK(gpio_config(&bk_gpio_config));
-    ESP_ERROR_CHECK(gpio_set_level(PIN_BKL, 1));
+    ESP_ERROR_CHECK(ledc_timer_config(&timer_config));
+
+    ledc_channel_config_t channel_config = {
+        .gpio_num = PIN_BKL,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_0,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_0,
+        .duty = BKL_PWM_MAX_DUTY,
+        .hpoint = 0,
+    };
+    ESP_ERROR_CHECK(ledc_channel_config(&channel_config));
 
     ESP_LOGI(TAG, "Initialize SPI bus");
     spi_bus_config_t buscfg = {
@@ -98,6 +134,7 @@ void display_init() {
     ESP_ERROR_CHECK(esp_lcd_panel_mirror(panel_handle, false, false));
     ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, true));
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
+    display_brightness_percentage(100);
 
     display_clear();
 }
@@ -137,16 +174,26 @@ void display_auto_inactive(uint64_t inactive_timeout) {
     uint64_t now = esp_timer_get_time();
 
     if (now - last_button_interaction >= inactive_timeout && !is_display_inactive) {
-        esp_lcd_panel_disp_sleep(panel_handle, true);
-        gpio_set_level(PIN_BKL, 0);
+        display_brightness_percentage(50);
 
         is_display_inactive = true;
     }
 }
 
+void display_auto_sleep(uint64_t sleep_timeout) {
+    uint64_t now = esp_timer_get_time();
+
+    if (now - last_button_interaction >= sleep_timeout && !is_display_sleep) {
+        esp_lcd_panel_disp_sleep(panel_handle, true);
+        display_brightness_percentage(0);
+
+        is_display_sleep = true;
+    }
+}
+
 void display_wakeup() {
     esp_lcd_panel_disp_sleep(panel_handle, false);
-    gpio_set_level(PIN_BKL, 1);
+    display_brightness_percentage(100);
 
     is_display_inactive = false;
 }

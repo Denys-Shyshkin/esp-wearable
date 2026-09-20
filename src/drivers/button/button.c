@@ -43,7 +43,7 @@ static void button_is_pressed(button *btn) {
             btn->btn_state = button_read;
 
             if (button_read == 0) {
-                if (is_display_inactive) {
+                if (is_display_inactive || is_display_sleep) {
                     display_wakeup();
                 } else {
                     btn->is_btn_pressed = 1;

@@ -16,6 +16,10 @@
 #define PIN_SDA GPIO_NUM_7
 #define PIN_SCL GPIO_NUM_8
 
+// #define MCU_LIGHT_SLEEP_MODE_ON
+// #define DISPLAY_SLEEP_MODE_ON
+// #define DISPLAY_INACTIVE_MODE_ON
+
 enum Main_Func {
     WIFI,
     TIME_SYNC,
