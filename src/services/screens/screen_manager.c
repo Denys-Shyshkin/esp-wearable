@@ -34,17 +34,16 @@ void go_screen_down() {
 }
 
 void screen_change(button *btn_up, button *btn_down, bool func_status[]) {
-    if (screen_number == STARTUP) {
-        if (btn_up->is_btn_pressed) {
-            btn_up->is_btn_pressed = 0;
+    if (btn_up->is_btn_pressed) {
+        btn_up->is_btn_pressed = 0;
 
-            go_screen_up();
-        }
+        go_screen_up();
+    }
 
-        
-        if (btn_down->is_btn_pressed) {
-            btn_down->is_btn_pressed = 0;
+    if (btn_down->is_btn_pressed) {
+        btn_down->is_btn_pressed = 0;
 
+        if (screen_number == STARTUP) {
             bool has_fails = false;
             for (int i = 0; i < FUNC_TOTAL_COUNT; i++) {
                 if (!func_status[i]) {
@@ -55,17 +54,7 @@ void screen_change(button *btn_up, button *btn_down, bool func_status[]) {
             if (has_fails) {
                 esp_restart();
             }
-        }
-    } else {
-        if (btn_up->is_btn_pressed) {
-            btn_up->is_btn_pressed = 0;
-
-            go_screen_up();
-        }
-
-        if (btn_down->is_btn_pressed) {
-            btn_down->is_btn_pressed = 0;
-
+        } else {
             go_screen_down();
         }
     }

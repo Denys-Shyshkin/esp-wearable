@@ -101,7 +101,7 @@ void app_main() {
         screen_manager(&imu, &hr, func_status);
 
         // esp_deep_sleep_start();
-        display_auto_inactive(DISPLAY_INACTIVE_TIMEOUT);
+        // display_auto_inactive(DISPLAY_INACTIVE_TIMEOUT);
 
         vTaskDelay(pdMS_TO_TICKS(SUPERLOOP_DELAY));
     }
